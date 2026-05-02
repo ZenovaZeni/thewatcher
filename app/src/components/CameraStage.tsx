@@ -7,6 +7,7 @@ type CameraStageProps = {
   threat: number;
   demoMode?: boolean;
   onSample: (sample: TrackingSample) => void;
+  onTrackerStatus?: (status: string) => void;
   onVideoReady: (video: HTMLVideoElement | null) => void;
   children?: ReactNode;
 };
@@ -19,7 +20,15 @@ const demoSample: TrackingSample = {
   smileScore: 0,
 };
 
-export function CameraStage({ stream, threat, demoMode = false, onSample, onVideoReady, children }: CameraStageProps) {
+export function CameraStage({
+  stream,
+  threat,
+  demoMode = false,
+  onSample,
+  onTrackerStatus,
+  onVideoReady,
+  children,
+}: CameraStageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackerRef = useRef<FaceTracker | null>(null);
   const [trackerStatus, setTrackerStatus] = useState("Warming camera");
@@ -40,6 +49,7 @@ export function CameraStage({ stream, threat, demoMode = false, onSample, onVide
   useEffect(() => {
     if (demoMode) {
       setTrackerStatus("Demo feed active");
+      onTrackerStatus?.("Demo feed active");
       return;
     }
 
@@ -50,17 +60,20 @@ export function CameraStage({ stream, threat, demoMode = false, onSample, onVide
         if (cancelled) return;
         trackerRef.current = tracker;
         setTrackerStatus("Keep your face in frame");
+        onTrackerStatus?.("Keep your face in frame");
       })
       .catch((error: unknown) => {
         if (cancelled) return;
         const message = error instanceof Error ? error.message : "Unknown MediaPipe error";
-        setTrackerStatus(`Face tracking failed: ${message.slice(0, 90)}`);
+        const status = `Face tracking failed: ${message.slice(0, 90)}`;
+        setTrackerStatus(status);
+        onTrackerStatus?.(status);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [demoMode]);
+  }, [demoMode, onTrackerStatus]);
 
   useEffect(() => {
     let frame = 0;

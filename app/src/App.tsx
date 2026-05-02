@@ -4,6 +4,7 @@ import { createDemoStream } from "./camera/createDemoStream";
 import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
 import { CaughtCardView } from "./components/CaughtCardView";
+import { DebugPanel } from "./components/DebugPanel";
 import { RitualHud } from "./components/RitualHud";
 import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
@@ -25,6 +26,8 @@ export function App() {
   const [sample, setSample] = useState<TrackingSample>(waitingSample);
   const [hasTrackingSample, setHasTrackingSample] = useState(false);
   const [caughtCardUrl, setCaughtCardUrl] = useState<string | null>(null);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [trackerStatus, setTrackerStatus] = useState("Camera idle");
   const [now, setNow] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const stableFaceStartedAtRef = useRef<number | null>(null);
@@ -167,8 +170,15 @@ export function App() {
           threat={threat}
           demoMode={isDemoMode}
           onSample={handleSample}
+          onTrackerStatus={setTrackerStatus}
           onVideoReady={handleVideoReady}
         >
+          <button type="button" className="debug-toggle" onClick={() => setDebugOpen((open) => !open)}>
+            Debug
+          </button>
+          {debugOpen ? (
+            <DebugPanel gameState={gameState} sample={sample} threat={threat} trackerStatus={trackerStatus} />
+          ) : null}
           {gameState.phase === "calibrating" ? (
             <section className="calibration-panel">
               <p className="eyebrow">Camera linked</p>
