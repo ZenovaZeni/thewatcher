@@ -18,17 +18,21 @@ export async function createFaceTracker(): Promise<FaceTracker> {
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm",
   );
 
-  const landmarker = await FaceLandmarker.createFromOptions(fileset, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task",
-      delegate: "GPU",
-    },
-    runningMode: "VIDEO",
-    numFaces: 1,
-    outputFaceBlendshapes: true,
-    outputFacialTransformationMatrixes: true,
-  });
+  const modelAssetPath =
+    "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
+  const createLandmarker = (delegate: "GPU" | "CPU") =>
+    FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: {
+        modelAssetPath,
+        delegate,
+      },
+      runningMode: "VIDEO",
+      numFaces: 1,
+      outputFaceBlendshapes: true,
+      outputFacialTransformationMatrixes: true,
+    });
+
+  const landmarker = await createLandmarker("GPU").catch(() => createLandmarker("CPU"));
 
   let previousCenter: { x: number; y: number } | null = null;
 

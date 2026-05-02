@@ -144,7 +144,8 @@ h2 {
 }
 
 .ritual-hud,
-.failure-panel {
+.failure-panel,
+.calibration-panel {
   position: fixed;
   left: 14px;
   right: 14px;
@@ -190,7 +191,8 @@ h2 {
   text-align: left;
 }
 
-.failure-panel h2 {
+.failure-panel h2,
+.calibration-panel h2 {
   color: #fff8f0;
 }
 

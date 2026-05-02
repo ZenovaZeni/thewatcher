@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 export type CameraState = {
   stream: MediaStream | null;
   error: string | null;
-  requestCamera: () => Promise<void>;
+  requestCamera: () => Promise<boolean>;
 };
 
 export function useCamera(): CameraState {
@@ -11,6 +11,11 @@ export function useCamera(): CameraState {
   const [error, setError] = useState<string | null>(null);
 
   const requestCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("This browser cannot open the camera.");
+      return false;
+    }
+
     try {
       const nextStream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -23,8 +28,10 @@ export function useCamera(): CameraState {
 
       setStream(nextStream);
       setError(null);
+      return true;
     } catch {
       setError("Camera permission is required to play.");
+      return false;
     }
   }, []);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createInitialGameState, startGame, tickGame } from "./gameMachine";
+import { createInitialGameState, startCalibration, startGame, tickGame } from "./gameMachine";
 
 describe("gameMachine", () => {
   it("starts on the first watcher ritual", () => {
@@ -8,6 +8,13 @@ describe("gameMachine", () => {
     expect(state.phase).toBe("playing");
     expect(state.currentRitualIndex).toBe(0);
     expect(state.ritualStartedAt).toBe(1000);
+  });
+
+  it("enters calibration before the ritual starts", () => {
+    const state = startCalibration(createInitialGameState());
+
+    expect(state.phase).toBe("calibrating");
+    expect(state.failureReason).toBeNull();
   });
 
   it("creates a failure state with a reason", () => {

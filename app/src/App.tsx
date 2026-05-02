@@ -4,7 +4,7 @@ import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
 import { CaughtCardView } from "./components/CaughtCardView";
 import { RitualHud } from "./components/RitualHud";
-import { createInitialGameState, startGame, tickGame } from "./game/gameMachine";
+import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
 import type { TrackingSample } from "./game/types";
 import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
@@ -25,6 +25,7 @@ export function App() {
   const [caughtCardUrl, setCaughtCardUrl] = useState<string | null>(null);
   const [now, setNow] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const stableFaceStartedAtRef = useRef<number | null>(null);
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
@@ -39,16 +40,49 @@ export function App() {
   useTensionAudio(gameState.phase === "playing" || gameState.phase === "failed", threat, gameState.phase === "failed");
 
   const begin = useCallback(async () => {
-    await requestCamera();
-    setGameState(startGame(createInitialGameState(), performance.now()));
+    const granted = await requestCamera();
+    if (!granted) return;
+
+    stableFaceStartedAtRef.current = null;
+    setSample(waitingSample);
+    setHasTrackingSample(false);
+    setCaughtCardUrl(null);
+    setGameState(startCalibration(createInitialGameState()));
   }, [requestCamera]);
 
   const retry = useCallback(() => {
     setSample(waitingSample);
     setHasTrackingSample(false);
     setCaughtCardUrl(null);
-    setGameState(startGame(createInitialGameState(), performance.now()));
+    stableFaceStartedAtRef.current = null;
+    setGameState(startCalibration(createInitialGameState()));
   }, []);
+
+  const handleVideoReady = useCallback((video: HTMLVideoElement | null) => {
+    videoRef.current = video;
+  }, []);
+
+  const handleSample = useCallback(
+    (nextSample: TrackingSample) => {
+      setSample(nextSample);
+      setHasTrackingSample(true);
+
+      if (gameState.phase !== "calibrating") return;
+
+      const timestamp = performance.now();
+      if (!nextSample.facePresent) {
+        stableFaceStartedAtRef.current = null;
+        return;
+      }
+
+      stableFaceStartedAtRef.current ??= timestamp;
+
+      if (timestamp - stableFaceStartedAtRef.current >= 900) {
+        setGameState((state) => (state.phase === "calibrating" ? startGame(state, performance.now()) : state));
+      }
+    },
+    [gameState.phase],
+  );
 
   useEffect(() => {
     if (gameState.phase !== "failed" || caughtCardUrl || !gameState.failureReason || !gameState.failedAt) return;
@@ -85,12 +119,16 @@ export function App() {
         <CameraStage
           stream={stream}
           threat={threat}
-          onSample={(nextSample) => {
-            setSample(nextSample);
-            setHasTrackingSample(true);
-          }}
-          onVideoReady={(video) => (videoRef.current = video)}
+          onSample={handleSample}
+          onVideoReady={handleVideoReady}
         >
+          {gameState.phase === "calibrating" ? (
+            <section className="calibration-panel">
+              <p className="eyebrow">Camera linked</p>
+              <h2>{sample.facePresent ? "Hold still." : "Center your face."}</h2>
+              <p>{sample.facePresent ? "The Watcher is learning where not to look." : "You will not be judged until it sees you."}</p>
+            </section>
+          ) : null}
           {gameState.phase === "playing" ? (
             <RitualHud ritual={ritual} secondsRemaining={secondsRemaining} threat={threat} />
           ) : null}

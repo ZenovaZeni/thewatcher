@@ -1,7 +1,7 @@
 import { evaluateRitual, watcherRituals } from "./rituals";
 import type { TrackingSample } from "./types";
 
-export type GamePhase = "idle" | "playing" | "failed" | "won";
+export type GamePhase = "idle" | "calibrating" | "playing" | "failed" | "won";
 
 export type GameState = {
   phase: GamePhase;
@@ -14,6 +14,17 @@ export type GameState = {
 export function createInitialGameState(): GameState {
   return {
     phase: "idle",
+    currentRitualIndex: 0,
+    ritualStartedAt: 0,
+    failureReason: null,
+    failedAt: null,
+  };
+}
+
+export function startCalibration(state: GameState): GameState {
+  return {
+    ...state,
+    phase: "calibrating",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
     failureReason: null,
