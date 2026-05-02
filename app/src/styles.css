@@ -116,6 +116,7 @@ h2 {
 .camera-breath,
 .edge-presence,
 .reflection-face,
+.rule-static,
 .scan-lines {
   pointer-events: none;
   position: absolute;
@@ -178,6 +179,14 @@ h2 {
 .scan-lines {
   opacity: 0.12;
   background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0 1px, transparent 1px 5px);
+  mix-blend-mode: screen;
+}
+
+.rule-static {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 248, 240, 0.24) 18px 20px, transparent 20px 42px),
+    repeating-linear-gradient(180deg, transparent 0 34px, rgba(209, 81, 98, 0.24) 34px 38px, transparent 38px 72px);
+  filter: blur(0.5px);
   mix-blend-mode: screen;
 }
 

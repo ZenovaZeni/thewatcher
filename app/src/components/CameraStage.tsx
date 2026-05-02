@@ -5,6 +5,7 @@ import { createFaceTracker, type FaceTracker } from "../vision/faceTracker";
 type CameraStageProps = {
   stream: MediaStream;
   threat: number;
+  signalPressure: number;
   demoMode?: boolean;
   onSample: (sample: TrackingSample) => void;
   onTrackerStatus?: (status: string) => void;
@@ -23,6 +24,7 @@ const demoSample: TrackingSample = {
 export function CameraStage({
   stream,
   threat,
+  signalPressure,
   demoMode = false,
   onSample,
   onTrackerStatus,
@@ -111,6 +113,10 @@ export function CameraStage({
       />
       <div className="reflection-face" style={{ opacity: Math.max(0, threat - 0.62) * 0.58 }} />
       <div className="camera-breath" style={{ opacity: 0.08 + threat * 0.28 }} />
+      <div
+        className="rule-static"
+        style={{ opacity: Math.max(0, signalPressure - 0.42) * 0.82, transform: `translateX(${signalPressure * 8}px)` }}
+      />
       <div className="scan-lines" />
       <div className="camera-vignette" />
       <p className="tracker-status">{trackerStatus}</p>
