@@ -69,4 +69,26 @@ describe("gameMachine", () => {
     expect(recovered.phase).toBe("playing");
     expect(recovered.violationStartedAt).toBeNull();
   });
+
+  it("fails the smile ritual when the player refuses to smile", () => {
+    const state = startGame(createInitialGameState(), 1000);
+    const smileRitual = { ...state, currentRitualIndex: 3 };
+    const firstViolation = tickGame(smileRitual, 4600, {
+      facePresent: true,
+      blinkScore: 0,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0,
+    });
+    const failed = tickGame(firstViolation, 5060, {
+      facePresent: true,
+      blinkScore: 0,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0,
+    });
+
+    expect(failed.phase).toBe("failed");
+    expect(failed.failureReason).toBe("SMILE MISSING");
+  });
 });

@@ -6,7 +6,7 @@ export type TrackingSample = {
   smileScore: number;
 };
 
-export type RitualKind = "do-not-blink" | "do-not-look-away" | "stay-still";
+export type RitualKind = "do-not-blink" | "do-not-look-away" | "stay-still" | "smile" | "stop-smiling";
 
 export type Ritual = {
   id: string;

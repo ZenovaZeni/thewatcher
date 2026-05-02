@@ -42,14 +42,19 @@ export function App() {
   const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length);
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
   const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
-  const signalPressure = Math.max(sample.blinkScore, sample.lookAwayScore, sample.motionScore);
+  const ritualPressure =
+    ritual.kind === "smile"
+      ? 1 - sample.smileScore
+      : ritual.kind === "stop-smiling"
+        ? sample.smileScore
+        : Math.max(sample.blinkScore, sample.lookAwayScore, sample.motionScore);
   const threat = useMemo(() => {
     if (gameState.phase === "failed") return 1;
     if (gameState.phase !== "playing") return 0;
     if (elapsedMs < ritual.introMs) return 0;
     const activeElapsedMs = Math.max(0, elapsedMs - ritual.introMs);
-    return Math.min(1, activeElapsedMs / ritual.durationMs + signalPressure * 0.45);
-  }, [elapsedMs, gameState.phase, ritual.durationMs, ritual.introMs, signalPressure]);
+    return Math.min(1, activeElapsedMs / ritual.durationMs + ritualPressure * 0.45);
+  }, [elapsedMs, gameState.phase, ritual.durationMs, ritual.introMs, ritualPressure]);
   const violationProgress =
     gameState.phase === "playing" && gameState.violationStartedAt && ritual.failHoldMs > 0
       ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / ritual.failHoldMs))
@@ -179,7 +184,7 @@ export function App() {
         <CameraStage
           stream={activeStream}
           threat={threat}
-          signalPressure={gameState.phase === "playing" && ritualTiming.stage === "active" ? signalPressure : 0}
+          signalPressure={gameState.phase === "playing" && ritualTiming.stage === "active" ? ritualPressure : 0}
           demoMode={isDemoMode}
           onSample={handleSample}
           onTrackerStatus={setTrackerStatus}

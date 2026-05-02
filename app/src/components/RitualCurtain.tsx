@@ -12,7 +12,11 @@ export function RitualCurtain({ ritual, introCountdown }: RitualCurtainProps) {
       <h2>{ritual.title}</h2>
       <p className="curtain-rule">{ritual.instruction}</p>
       <div className="curtain-count">{introCountdown}</div>
-      <p className="curtain-warning">When the frame turns red, the first mistake counts.</p>
+      <p className="curtain-warning">
+        {ritual.kind === "smile" || ritual.kind === "stop-smiling"
+          ? "The phone can read your mouth now."
+          : "When the frame turns red, the first mistake counts."}
+      </p>
     </section>
   );
 }

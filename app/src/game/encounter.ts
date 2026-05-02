@@ -2,6 +2,8 @@ const watcherMessages = [
   "The phone has found your eyes.",
   "It only moves between frames.",
   "Your face is the lock.",
+  "It wants proof you can obey.",
+  "It does not like what you became.",
 ];
 
 export type EncounterStatus = {
