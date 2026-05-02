@@ -14,12 +14,9 @@ const emptySample: TrackingSample = {
 };
 
 export async function createFaceTracker(): Promise<FaceTracker> {
-  const fileset = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm",
-  );
+  const fileset = await FilesetResolver.forVisionTasks("/mediapipe/wasm");
 
-  const modelAssetPath =
-    "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
+  const modelAssetPath = "/mediapipe/models/face_landmarker.task";
   const createLandmarker = (delegate: "GPU" | "CPU") =>
     FaceLandmarker.createFromOptions(fileset, {
       baseOptions: {

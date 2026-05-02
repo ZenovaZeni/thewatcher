@@ -51,9 +51,10 @@ export function CameraStage({ stream, threat, demoMode = false, onSample, onVide
         trackerRef.current = tracker;
         setTrackerStatus("Keep your face in frame");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (cancelled) return;
-        setTrackerStatus("Face tracking failed to load");
+        const message = error instanceof Error ? error.message : "Unknown MediaPipe error";
+        setTrackerStatus(`Face tracking failed: ${message.slice(0, 90)}`);
       });
 
     return () => {
