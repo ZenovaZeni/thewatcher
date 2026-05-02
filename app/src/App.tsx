@@ -5,8 +5,10 @@ import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
 import { CaughtCardView } from "./components/CaughtCardView";
 import { DebugPanel } from "./components/DebugPanel";
+import { EncounterStatus } from "./components/EncounterStatus";
 import { RitualCurtain } from "./components/RitualCurtain";
 import { RitualHud } from "./components/RitualHud";
+import { getEncounterStatus } from "./game/encounter";
 import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
 import { getRitualTiming } from "./game/ritualTiming";
@@ -37,6 +39,7 @@ export function App() {
   const isDemoMode = Boolean(demoStream && !stream);
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
+  const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length);
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
   const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
   const signalPressure = Math.max(sample.blinkScore, sample.lookAwayScore, sample.motionScore);
@@ -182,6 +185,7 @@ export function App() {
           onTrackerStatus={setTrackerStatus}
           onVideoReady={handleVideoReady}
         >
+          {gameState.phase === "playing" ? <EncounterStatus status={encounterStatus} /> : null}
           {gameState.phase === "playing" && ritualTiming.stage === "intro" ? (
             <RitualCurtain ritual={ritual} introCountdown={ritualTiming.introCountdown} />
           ) : null}
@@ -200,7 +204,10 @@ export function App() {
             <section className="calibration-panel">
               <p className="eyebrow">Camera linked</p>
               <h2>{sample.facePresent ? "Hold still." : "Center your face."}</h2>
-              <p>{sample.facePresent ? "The Watcher is learning where not to look." : "You will not be judged until it sees you."}</p>
+              <p>{sample.facePresent ? "Signal acquired. Do not adjust the frame." : "You will not be judged until it sees you."}</p>
+              <div className="calibration-lock" aria-hidden="true">
+                <span className={sample.facePresent ? "is-locked" : ""} />
+              </div>
             </section>
           ) : null}
           {gameState.phase === "playing" ? (
@@ -236,12 +243,12 @@ export function App() {
             </section>
           ) : null}
           {gameState.phase === "won" ? (
-            <section className="failure-panel">
-              <p className="eyebrow">Survived</p>
-              <h2>It stopped watching.</h2>
-              <p>For now.</p>
+            <section className="win-panel">
+              <p className="eyebrow">Attempt complete</p>
+              <h2>You survived The Watcher.</h2>
+              <p>The phone did not blink. You did.</p>
               <button type="button" onClick={retry}>
-                Again
+                Play again
               </button>
             </section>
           ) : null}

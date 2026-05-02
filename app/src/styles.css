@@ -232,6 +232,52 @@ h2 {
   text-transform: uppercase;
 }
 
+.encounter-status {
+  position: fixed;
+  top: max(78px, calc(env(safe-area-inset-top) + 72px));
+  right: 14px;
+  z-index: 4;
+  width: min(300px, calc(100vw - 28px));
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(255, 248, 240, 0.12);
+  background: rgba(5, 5, 5, 0.58);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.38);
+  padding: 12px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.encounter-status-row {
+  display: flex;
+  justify-content: space-between;
+  color: #fff8f0;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.encounter-progress {
+  height: 4px;
+  overflow: hidden;
+  background: rgba(255, 248, 240, 0.12);
+}
+
+.encounter-progress span {
+  display: block;
+  height: 100%;
+  background: #d15162;
+  box-shadow: 0 0 22px rgba(209, 81, 98, 0.72);
+  transition: width 220ms ease;
+}
+
+.encounter-status p {
+  color: rgba(244, 239, 231, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .ritual-curtain {
   pointer-events: none;
   position: fixed;
@@ -316,7 +362,8 @@ h2 {
 
 .ritual-hud,
 .failure-panel,
-.calibration-panel {
+.calibration-panel,
+.win-panel {
   position: fixed;
   left: 14px;
   right: 14px;
@@ -384,8 +431,38 @@ h2 {
 }
 
 .failure-panel h2,
-.calibration-panel h2 {
+.calibration-panel h2,
+.win-panel h2 {
   color: #fff8f0;
+}
+
+.win-panel {
+  left: 50%;
+  right: auto;
+  width: min(560px, calc(100vw - 28px));
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.calibration-lock {
+  height: 5px;
+  overflow: hidden;
+  background: rgba(255, 248, 240, 0.12);
+}
+
+.calibration-lock span {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: rgba(255, 248, 240, 0.48);
+  transition:
+    width 900ms ease,
+    background 200ms ease;
+}
+
+.calibration-lock span.is-locked {
+  width: 100%;
+  background: #d15162;
 }
 
 .caught-card-view {
@@ -517,6 +594,13 @@ h2 {
 }
 
 @media (max-width: 780px) {
+  .encounter-status {
+    top: max(64px, calc(env(safe-area-inset-top) + 58px));
+    left: 14px;
+    right: 14px;
+    width: auto;
+  }
+
   .caught-card-view {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr auto;
