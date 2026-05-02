@@ -172,7 +172,7 @@ h2 {
   top: auto;
   bottom: 4%;
   z-index: 2;
-  width: min(46vw, 340px);
+  width: min(42vw, 300px);
   height: min(82vh, 760px);
   border-radius: 48% 48% 8% 8%;
   background:
@@ -186,11 +186,11 @@ h2 {
 }
 
 .watcher-presence-left {
-  left: max(-118px, -9vw);
+  left: calc(50% - min(34vw, 360px));
 }
 
 .watcher-presence-right {
-  right: max(-118px, -9vw);
+  right: calc(50% - min(34vw, 360px));
 }
 
 .watcher-head {
@@ -281,11 +281,12 @@ h2 {
 }
 
 .edge-presence-left {
-  left: -54px;
+  left: calc(50% - min(34vw, 360px));
+  transform: translateX(-40%);
 }
 
 .edge-presence-right {
-  right: -64px;
+  right: calc(50% - min(34vw, 360px));
   bottom: 28%;
   width: min(18vw, 110px);
   height: min(44vh, 360px);
