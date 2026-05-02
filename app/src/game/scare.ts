@@ -1,4 +1,5 @@
 import type { GamePhase } from "./gameMachine";
+import type { RitualKind } from "./types";
 
 export type WatcherScare = {
   presence: number;
@@ -6,6 +7,8 @@ export type WatcherScare = {
   peekSide: "left" | "right";
   eyeGlow: number;
   distortion: number;
+  creatureOpacity: number;
+  movementJump: number;
   revealMessage: string;
 };
 
@@ -15,6 +18,7 @@ type WatcherScareInput = {
   threat: number;
   violationProgress: number;
   phase: GamePhase;
+  activeRuleKind?: RitualKind;
 };
 
 const revealMessages = [
@@ -36,22 +40,28 @@ export function getWatcherScare({
   threat,
   violationProgress,
   phase,
+  activeRuleKind,
 }: WatcherScareInput): WatcherScare {
   const safeTotal = Math.max(1, totalRituals);
   const completed = Math.min(Math.max(0, completedRituals), safeTotal);
   const progress = completed / safeTotal;
-  const pressure = clamp(threat * 0.36 + violationProgress * 0.34);
+  const isLookAwayPressure = activeRuleKind === "do-not-look-away" && violationProgress > 0.2;
+  const movementJump = isLookAwayPressure ? clamp((violationProgress - 0.2) / 0.58) : 0;
+  const pressure = clamp(threat * 0.36 + violationProgress * 0.34 + movementJump * 0.18);
   const failed = phase === "failed";
   const ritualComplete = phase === "ritualComplete";
-  const presence = failed ? 1 : clamp(0.12 + progress * 0.5 + pressure + (ritualComplete ? 0.18 : 0));
-  const scale = failed ? 1.28 : 0.84 + progress * 0.28 + pressure * 0.18 + (ritualComplete ? 0.08 : 0);
+  const presence = failed ? 1 : clamp(0.42 + progress * 0.32 + pressure + (ritualComplete ? 0.18 : 0));
+  const scale = failed ? 1.34 : 0.84 + progress * 0.28 + pressure * 0.18 + movementJump * 0.18 + (ritualComplete ? 0.08 : 0);
+  const baseSide = completed % 2 === 0 ? "left" : "right";
 
   return {
     presence,
     scale,
-    peekSide: completed % 2 === 0 ? "left" : "right",
-    eyeGlow: failed ? 1 : clamp(progress * 0.66 + pressure * 0.8 + (ritualComplete ? 0.22 : 0)),
-    distortion: failed ? 1 : clamp(threat * 0.6 + violationProgress * 0.62 + progress * 0.18),
+    peekSide: movementJump > 0.55 ? (baseSide === "left" ? "right" : "left") : baseSide,
+    eyeGlow: failed ? 1 : clamp(0.34 + progress * 0.54 + pressure * 0.8 + (ritualComplete ? 0.22 : 0)),
+    distortion: failed ? 1 : clamp(threat * 0.6 + violationProgress * 0.62 + progress * 0.18 + movementJump * 0.22),
+    creatureOpacity: failed ? 1 : clamp(0.72 + progress * 0.18 + pressure * 0.16),
+    movementJump,
     revealMessage: failed ? "It was already in the evidence." : revealMessages[Math.min(completed, revealMessages.length - 1)],
   };
 }

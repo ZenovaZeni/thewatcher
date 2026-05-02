@@ -77,6 +77,7 @@ export function App() {
     threat,
     violationProgress,
     phase: gameState.phase,
+    activeRuleKind: activeRitual.kind,
   });
 
   useEffect(() => {

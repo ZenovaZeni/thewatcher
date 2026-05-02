@@ -170,47 +170,92 @@ h2 {
 
 .watcher-presence {
   top: auto;
-  bottom: 8%;
-  z-index: 1;
-  width: min(34vw, 230px);
-  height: min(70vh, 620px);
-  border-radius: 50% 50% 12% 12%;
+  bottom: 4%;
+  z-index: 2;
+  width: min(46vw, 340px);
+  height: min(82vh, 760px);
+  border-radius: 48% 48% 8% 8%;
   background:
-    radial-gradient(circle at 39% 17%, rgba(255, 248, 240, 0.18) 0 1.2%, transparent 1.8%),
-    radial-gradient(circle at 61% 17%, rgba(255, 248, 240, 0.16) 0 1.2%, transparent 1.8%),
-    radial-gradient(ellipse at 50% 18%, rgba(0, 0, 0, 0.98) 0 18%, rgba(0, 0, 0, 0.86) 22%, transparent 42%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.2));
-  filter: blur(1.4px);
-  mix-blend-mode: multiply;
+    radial-gradient(ellipse at 50% 15%, rgba(0, 0, 0, 0.98) 0 20%, rgba(0, 0, 0, 0.92) 28%, transparent 41%),
+    radial-gradient(ellipse at 50% 62%, rgba(0, 0, 0, 0.95) 0 34%, rgba(0, 0, 0, 0.62) 52%, transparent 72%);
+  filter: blur(0.4px) contrast(1.18);
+  mix-blend-mode: normal;
   transition:
-    opacity 260ms ease,
-    transform 420ms ease;
+    opacity 140ms ease,
+    transform 180ms steps(2, end);
 }
 
 .watcher-presence-left {
-  left: max(-92px, -8vw);
+  left: max(-118px, -9vw);
 }
 
 .watcher-presence-right {
-  right: max(-92px, -8vw);
+  right: max(-118px, -9vw);
+}
+
+.watcher-head {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 44%;
+  height: 24%;
+  border-radius: 48% 48% 42% 42%;
+  background:
+    radial-gradient(circle at 36% 38%, rgba(255, 248, 240, 0.22) 0 2.2%, transparent 3%),
+    radial-gradient(circle at 64% 38%, rgba(255, 248, 240, 0.2) 0 2.2%, transparent 3%),
+    radial-gradient(ellipse at 50% 68%, rgba(255, 248, 240, 0.08) 0 8%, transparent 12%),
+    #030303;
+  box-shadow:
+    0 0 36px rgba(0, 0, 0, 0.92),
+    0 0 18px rgba(209, 81, 98, 0.22);
+  transform: translateX(-50%);
 }
 
 .watcher-eye {
   position: absolute;
-  top: 16%;
-  width: 7px;
-  height: 7px;
+  top: 15.4%;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: rgba(255, 248, 240, 0.78);
-  box-shadow: 0 0 22px rgba(255, 248, 240, 0.62);
+  background: rgba(255, 248, 240, 0.92);
+  box-shadow:
+    0 0 18px rgba(255, 248, 240, 0.9),
+    0 0 34px rgba(209, 81, 98, 0.72);
 }
 
 .watcher-eye-left {
-  left: 40%;
+  left: 44%;
 }
 
 .watcher-eye-right {
-  right: 40%;
+  right: 44%;
+}
+
+.watcher-mouth {
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  z-index: 1;
+  width: 14%;
+  height: 2.8%;
+  border-radius: 999px;
+  background: rgba(255, 248, 240, 0.18);
+  box-shadow: 0 0 18px rgba(244, 239, 231, 0.22);
+  transform: translateX(-50%);
+}
+
+.watcher-shoulders {
+  position: absolute;
+  left: 50%;
+  top: 27%;
+  width: 86%;
+  height: 55%;
+  border-radius: 44% 44% 12% 12%;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(0, 0, 0, 0.98) 0 24%, rgba(0, 0, 0, 0.7) 45%, transparent 72%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.22));
+  transform: translateX(-50%);
 }
 
 .watcher-smear {

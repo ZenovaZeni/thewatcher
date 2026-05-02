@@ -109,12 +109,17 @@ export function CameraStage({
       <div
         className={`watcher-presence watcher-presence-${watcherScare.peekSide}`}
         style={{
-          opacity: watcherScare.presence,
-          transform: `translateY(${18 - watcherScare.presence * 42}px) scale(${watcherScare.scale})`,
+          opacity: watcherScare.creatureOpacity,
+          transform: `translateY(${20 - watcherScare.presence * 42}px) translateX(${
+            (watcherScare.peekSide === "left" ? 1 : -1) * watcherScare.movementJump * 52
+          }px) scale(${watcherScare.scale})`,
         }}
       >
+        <span className="watcher-head" />
         <span className="watcher-eye watcher-eye-left" style={{ opacity: watcherScare.eyeGlow }} />
         <span className="watcher-eye watcher-eye-right" style={{ opacity: watcherScare.eyeGlow }} />
+        <span className="watcher-mouth" style={{ opacity: Math.max(0.3, watcherScare.eyeGlow * 0.8) }} />
+        <span className="watcher-shoulders" />
       </div>
       <div
         className="watcher-smear"
