@@ -16,6 +16,7 @@ describe("gameMachine", () => {
     expect(state.phase).toBe("playing");
     expect(state.currentRitualIndex).toBe(0);
     expect(state.ritualStartedAt).toBe(1000);
+    expect(state.activeRuleId).toBe("watcher-blink");
     expect(state.violationStartedAt).toBeNull();
   });
 
@@ -90,5 +91,28 @@ describe("gameMachine", () => {
 
     expect(failed.phase).toBe("failed");
     expect(failed.failureReason).toBe("SMILE MISSING");
+  });
+
+  it("switches active rules inside obey-the-face", () => {
+    const state = startGame(createInitialGameState(), 1000);
+    const obeyRitual = { ...state, currentRitualIndex: 5, activeRuleId: "watcher-obey-face" };
+    const smiling = tickGame(obeyRitual, 5000, {
+      facePresent: true,
+      blinkScore: 0,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0.8,
+    });
+    const stopped = tickGame(smiling, 8800, {
+      facePresent: true,
+      blinkScore: 0,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0,
+    });
+
+    expect(stopped.phase).toBe("playing");
+    expect(stopped.activeRuleId).toBe("watcher-obey-face:stop-smiling:Stop smiling.");
+    expect(stopped.violationStartedAt).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ const watcherMessages = [
   "Your face is the lock.",
   "It wants proof you can obey.",
   "It does not like what you became.",
+  "Now it changes the rules.",
 ];
 
 export type EncounterStatus = {

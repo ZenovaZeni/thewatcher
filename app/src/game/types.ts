@@ -19,6 +19,16 @@ export type Ritual = {
   failHoldMs: number;
   failReason: string;
   threshold: number;
+  segments?: RitualSegment[];
+};
+
+export type RitualSegment = {
+  startsAtMs: number;
+  kind: RitualKind;
+  instruction: string;
+  failReason: string;
+  threshold: number;
+  failHoldMs: number;
 };
 
 export type RitualResult = { status: "safe" } | { status: "failed"; reason: string };

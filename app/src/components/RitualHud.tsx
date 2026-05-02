@@ -2,6 +2,7 @@ import type { Ritual } from "../game/types";
 
 type RitualHudProps = {
   ritual: Ritual;
+  activeRitual: Ritual;
   timingStage: "intro" | "active";
   introCountdown: number;
   secondsRemaining: number;
@@ -11,6 +12,7 @@ type RitualHudProps = {
 
 export function RitualHud({
   ritual,
+  activeRitual,
   timingStage,
   introCountdown,
   secondsRemaining,
@@ -23,10 +25,10 @@ export function RitualHud({
     <div className={inIntro ? "ritual-hud ritual-hud-intro" : "ritual-hud"}>
       <div>
         <p className="eyebrow">{ritual.title}</p>
-        <h2>{inIntro ? "Get ready." : ritual.instruction}</h2>
+        <h2>{inIntro ? "Get ready." : activeRitual.instruction}</h2>
         {inIntro ? <p>Ritual begins in {introCountdown}</p> : null}
-        {!inIntro && ritual.kind === "smile" ? <p>Hold the smile.</p> : null}
-        {!inIntro && ritual.kind === "stop-smiling" ? <p>Let your face go empty.</p> : null}
+        {!inIntro && activeRitual.kind === "smile" ? <p>Hold the smile.</p> : null}
+        {!inIntro && activeRitual.kind === "stop-smiling" ? <p>Let your face go empty.</p> : null}
       </div>
       <div className="hud-row">
         <span>{inIntro ? "Stand by" : `${secondsRemaining}s`}</span>

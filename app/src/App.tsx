@@ -11,6 +11,7 @@ import { RitualHud } from "./components/RitualHud";
 import { getEncounterStatus } from "./game/encounter";
 import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
+import { getActiveRitual } from "./game/ritualSegments";
 import { getRitualTiming } from "./game/ritualTiming";
 import type { TrackingSample } from "./game/types";
 import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
@@ -39,13 +40,14 @@ export function App() {
   const isDemoMode = Boolean(demoStream && !stream);
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
+  const activeRitual = getActiveRitual(ritual, now, gameState.ritualStartedAt);
   const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length);
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
   const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
   const ritualPressure =
-    ritual.kind === "smile"
+    activeRitual.kind === "smile"
       ? 1 - sample.smileScore
-      : ritual.kind === "stop-smiling"
+      : activeRitual.kind === "stop-smiling"
         ? sample.smileScore
         : Math.max(sample.blinkScore, sample.lookAwayScore, sample.motionScore);
   const threat = useMemo(() => {
@@ -56,8 +58,8 @@ export function App() {
     return Math.min(1, activeElapsedMs / ritual.durationMs + ritualPressure * 0.45);
   }, [elapsedMs, gameState.phase, ritual.durationMs, ritual.introMs, ritualPressure]);
   const violationProgress =
-    gameState.phase === "playing" && gameState.violationStartedAt && ritual.failHoldMs > 0
-      ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / ritual.failHoldMs))
+    gameState.phase === "playing" && gameState.violationStartedAt && activeRitual.failHoldMs > 0
+      ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / activeRitual.failHoldMs))
       : 0;
 
   useTensionAudio(gameState.phase === "playing" || gameState.phase === "failed", threat, gameState.phase === "failed");
@@ -196,7 +198,7 @@ export function App() {
           ) : null}
           {gameState.phase === "playing" && ritualTiming.stage === "active" ? (
             <div className="active-rule-banner" aria-hidden="true">
-              <span>{ritual.instruction}</span>
+              <span>{activeRitual.instruction}</span>
             </div>
           ) : null}
           <button type="button" className="debug-toggle" onClick={() => setDebugOpen((open) => !open)}>
@@ -218,6 +220,7 @@ export function App() {
           {gameState.phase === "playing" ? (
             <RitualHud
               ritual={ritual}
+              activeRitual={activeRitual}
               timingStage={ritualTiming.stage}
               introCountdown={ritualTiming.introCountdown}
               secondsRemaining={ritualTiming.secondsRemaining}

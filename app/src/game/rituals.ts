@@ -61,6 +61,44 @@ export const watcherRituals: Ritual[] = [
     failReason: "SMILE DETECTED",
     threshold: 0.38,
   },
+  {
+    id: "watcher-obey-face",
+    kind: "smile",
+    title: "Obey The Face",
+    instruction: "Smile.",
+    durationMs: 18000,
+    introMs: 2400,
+    graceMs: 500,
+    failHoldMs: 340,
+    failReason: "SMILE MISSING",
+    threshold: 0.42,
+    segments: [
+      {
+        startsAtMs: 0,
+        kind: "smile",
+        instruction: "Smile.",
+        failReason: "SMILE MISSING",
+        threshold: 0.42,
+        failHoldMs: 340,
+      },
+      {
+        startsAtMs: 5200,
+        kind: "stop-smiling",
+        instruction: "Stop smiling.",
+        failReason: "SMILE DETECTED",
+        threshold: 0.38,
+        failHoldMs: 180,
+      },
+      {
+        startsAtMs: 10400,
+        kind: "smile",
+        instruction: "Smile again.",
+        failReason: "SMILE MISSING",
+        threshold: 0.46,
+        failHoldMs: 260,
+      },
+    ],
+  },
 ];
 
 export function evaluateRitual(ritual: Ritual, sample: TrackingSample): RitualResult {

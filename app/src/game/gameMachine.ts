@@ -1,4 +1,5 @@
 import { evaluateRitual, watcherRituals } from "./rituals";
+import { getActiveRitual } from "./ritualSegments";
 import type { TrackingSample } from "./types";
 
 export type GamePhase = "idle" | "calibrating" | "playing" | "failed" | "won";
@@ -7,6 +8,7 @@ export type GameState = {
   phase: GamePhase;
   currentRitualIndex: number;
   ritualStartedAt: number;
+  activeRuleId: string | null;
   violationStartedAt: number | null;
   failureReason: string | null;
   failedAt: number | null;
@@ -17,6 +19,7 @@ export function createInitialGameState(): GameState {
     phase: "idle",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    activeRuleId: null,
     violationStartedAt: null,
     failureReason: null,
     failedAt: null,
@@ -29,6 +32,7 @@ export function startCalibration(state: GameState): GameState {
     phase: "calibrating",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    activeRuleId: null,
     violationStartedAt: null,
     failureReason: null,
     failedAt: null,
@@ -41,6 +45,7 @@ export function startGame(state: GameState, now: number): GameState {
     phase: "playing",
     currentRitualIndex: 0,
     ritualStartedAt: now,
+    activeRuleId: watcherRituals[0].id,
     violationStartedAt: null,
     failureReason: null,
     failedAt: null,
@@ -53,29 +58,32 @@ export function tickGame(state: GameState, now: number, sample: TrackingSample):
   }
 
   const ritual = watcherRituals[state.currentRitualIndex];
-  const result = evaluateRitual(ritual, sample);
   const elapsedMs = now - state.ritualStartedAt;
+  const activeRitual = getActiveRitual(ritual, now, state.ritualStartedAt);
+  const activeRuleId = `${ritual.id}:${activeRitual.kind}:${activeRitual.instruction}`;
+  const stateForRule = state.activeRuleId === activeRuleId ? state : { ...state, activeRuleId, violationStartedAt: null };
+  const result = evaluateRitual(activeRitual, sample);
 
   if (elapsedMs < ritual.introMs + ritual.graceMs) {
-    return state.violationStartedAt ? { ...state, violationStartedAt: null } : state;
+    return stateForRule.violationStartedAt ? { ...stateForRule, violationStartedAt: null } : stateForRule;
   }
 
   if (result.status === "failed") {
-    const violationStartedAt = state.violationStartedAt ?? now;
+    const violationStartedAt = stateForRule.violationStartedAt ?? now;
 
-    if (now - violationStartedAt < ritual.failHoldMs) {
-      return { ...state, violationStartedAt };
+    if (now - violationStartedAt < activeRitual.failHoldMs) {
+      return { ...stateForRule, violationStartedAt };
     }
 
-    return { ...state, phase: "failed", failureReason: result.reason, failedAt: now };
+    return { ...stateForRule, phase: "failed", failureReason: result.reason, failedAt: now };
   }
 
-  if (state.violationStartedAt) {
-    return { ...state, violationStartedAt: null };
+  if (stateForRule.violationStartedAt) {
+    return { ...stateForRule, violationStartedAt: null };
   }
 
   if (elapsedMs < ritual.introMs + ritual.durationMs) {
-    return state;
+    return stateForRule;
   }
 
   const nextIndex = state.currentRitualIndex + 1;
@@ -84,5 +92,11 @@ export function tickGame(state: GameState, now: number, sample: TrackingSample):
     return { ...state, phase: "won" };
   }
 
-  return { ...state, currentRitualIndex: nextIndex, ritualStartedAt: now, violationStartedAt: null };
+  return {
+    ...stateForRule,
+    currentRitualIndex: nextIndex,
+    ritualStartedAt: now,
+    activeRuleId: watcherRituals[nextIndex].id,
+    violationStartedAt: null,
+  };
 }
