@@ -9,7 +9,7 @@ export const watcherRituals: Ritual[] = [
     durationMs: 20000,
     introMs: 3000,
     graceMs: 1000,
-    failHoldMs: 150,
+    failHoldMs: 0,
     failReason: "BLINK DETECTED",
     threshold: 0.72,
   },

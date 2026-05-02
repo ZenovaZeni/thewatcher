@@ -40,20 +40,9 @@ describe("gameMachine", () => {
     expect(next.violationStartedAt).toBeNull();
   });
 
-  it("waits for blink to stay above threshold before failing", () => {
+  it("fails on the first active blink sample", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const firstViolation = tickGame(state, 5200, {
-      facePresent: true,
-      blinkScore: 1,
-      lookAwayScore: 0,
-      motionScore: 0,
-      smileScore: 0,
-    });
-
-    expect(firstViolation.phase).toBe("playing");
-    expect(firstViolation.violationStartedAt).toBe(5200);
-
-    const failed = tickGame(firstViolation, 5360, {
+    const failed = tickGame(state, 5200, {
       facePresent: true,
       blinkScore: 1,
       lookAwayScore: 0,
@@ -65,16 +54,17 @@ describe("gameMachine", () => {
     expect(failed.failureReason).toBe("BLINK DETECTED");
   });
 
-  it("clears a pending blink violation when the player recovers", () => {
+  it("clears a pending look-away violation when the player recovers", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const firstViolation = tickGame(state, 5200, {
+    const lookAwayRitual = { ...state, currentRitualIndex: 1 };
+    const firstViolation = tickGame(lookAwayRitual, 4500, {
       facePresent: true,
-      blinkScore: 1,
-      lookAwayScore: 0,
+      blinkScore: 0,
+      lookAwayScore: 1,
       motionScore: 0,
       smileScore: 0,
     });
-    const recovered = tickGame(firstViolation, 5280, openEyesSample);
+    const recovered = tickGame(firstViolation, 4580, openEyesSample);
 
     expect(recovered.phase).toBe("playing");
     expect(recovered.violationStartedAt).toBeNull();
