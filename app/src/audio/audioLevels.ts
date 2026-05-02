@@ -12,19 +12,19 @@ function clamp(value: number, min = 0, max = 1) {
 export function getTensionAudioLevels(threat: number, failed: boolean): TensionAudioLevels {
   if (failed) {
     return {
-      primaryFrequency: 112,
-      secondaryFrequency: 176,
-      primaryGain: 0.12,
-      secondaryGain: 0.04,
+      primaryFrequency: 74,
+      secondaryFrequency: 210,
+      primaryGain: 0.035,
+      secondaryGain: 0.014,
     };
   }
 
   const pressure = clamp(threat);
 
   return {
-    primaryFrequency: 82 + pressure * 46,
-    secondaryFrequency: 138 + pressure * 58,
-    primaryGain: 0.028 + pressure * 0.07,
-    secondaryGain: 0.01 + pressure * 0.028,
+    primaryFrequency: 52 + pressure * 42,
+    secondaryFrequency: 168 + pressure * 76,
+    primaryGain: 0.009 + pressure * 0.028,
+    secondaryGain: 0.003 + pressure * 0.016,
   };
 }

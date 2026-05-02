@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { getTensionAudioLevels } from "./audioLevels";
 
 describe("getTensionAudioLevels", () => {
-  it("keeps the normal tension bed in an audible speaker range", () => {
+  it("keeps the normal tension bed quiet enough to avoid engine hum", () => {
     const levels = getTensionAudioLevels(0.25, false);
 
-    expect(levels.primaryFrequency).toBeGreaterThanOrEqual(82);
-    expect(levels.secondaryFrequency).toBeGreaterThanOrEqual(138);
-    expect(levels.primaryGain).toBeGreaterThanOrEqual(0.028);
-    expect(levels.secondaryGain).toBeGreaterThanOrEqual(0.01);
+    expect(levels.primaryFrequency).toBeLessThanOrEqual(68);
+    expect(levels.secondaryFrequency).toBeGreaterThanOrEqual(160);
+    expect(levels.primaryGain).toBeLessThanOrEqual(0.018);
+    expect(levels.secondaryGain).toBeLessThanOrEqual(0.008);
   });
 
   it("gets louder and higher as threat rises", () => {
@@ -23,7 +23,7 @@ describe("getTensionAudioLevels", () => {
   it("uses the loudest sustained bed after failure", () => {
     const failed = getTensionAudioLevels(0.1, true);
 
-    expect(failed.primaryGain).toBe(0.12);
-    expect(failed.secondaryGain).toBe(0.04);
+    expect(failed.primaryGain).toBe(0.035);
+    expect(failed.secondaryGain).toBe(0.014);
   });
 });

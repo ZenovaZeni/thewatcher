@@ -27,15 +27,15 @@ function playImpact(audio: AudioContext, intensity: number) {
   const noise = makeNoise(audio, 0.18);
   const noiseGain = audio.createGain();
 
-  stinger.type = "sawtooth";
+  stinger.type = "triangle";
   stinger.frequency.setValueAtTime(180, now);
   stinger.frequency.exponentialRampToValueAtTime(41, now + 0.32);
   stingerGain.gain.setValueAtTime(0.0001, now);
-  stingerGain.gain.exponentialRampToValueAtTime(0.12 * intensity, now + 0.025);
+  stingerGain.gain.exponentialRampToValueAtTime(0.07 * intensity, now + 0.025);
   stingerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
 
   noiseGain.gain.setValueAtTime(0.0001, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.075 * intensity, now + 0.02);
+  noiseGain.gain.exponentialRampToValueAtTime(0.055 * intensity, now + 0.02);
   noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
 
   stinger.connect(stingerGain);
@@ -59,14 +59,14 @@ function playBreath(audio: AudioContext, intensity: number) {
   breathFilter.type = "lowpass";
   breathFilter.frequency.setValueAtTime(360 + intensity * 180, now);
   breathGain.gain.setValueAtTime(0.0001, now);
-  breathGain.gain.exponentialRampToValueAtTime(0.13 * intensity, now + 0.08);
+  breathGain.gain.exponentialRampToValueAtTime(0.065 * intensity, now + 0.08);
   breathGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
 
   knock.type = "sine";
   knock.frequency.setValueAtTime(74, now + 0.1);
   knock.frequency.exponentialRampToValueAtTime(39, now + 0.24);
   knockGain.gain.setValueAtTime(0.0001, now + 0.1);
-  knockGain.gain.exponentialRampToValueAtTime(0.16 * intensity, now + 0.12);
+  knockGain.gain.exponentialRampToValueAtTime(0.085 * intensity, now + 0.12);
   knockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
 
   breath.connect(breathFilter);
@@ -92,14 +92,14 @@ function playGlitch(audio: AudioContext, intensity: number) {
   filter.frequency.setValueAtTime(940 + intensity * 840, now);
   filter.Q.setValueAtTime(8, now);
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.14 * intensity, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.075 * intensity, now + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
 
   tone.type = "square";
   tone.frequency.setValueAtTime(118, now);
   tone.frequency.exponentialRampToValueAtTime(402, now + 0.06);
   toneGain.gain.setValueAtTime(0.0001, now);
-  toneGain.gain.exponentialRampToValueAtTime(0.09 * intensity, now + 0.01);
+  toneGain.gain.exponentialRampToValueAtTime(0.045 * intensity, now + 0.01);
   toneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
 
   glitch.connect(filter);
@@ -136,8 +136,8 @@ export function useTensionAudio(active: boolean, threat: number, failed: boolean
     if (audio.state === "suspended") {
       void audio.resume();
     }
-    oscillator.type = "sawtooth";
-    oscillator.frequency.value = 82;
+    oscillator.type = "sine";
+    oscillator.frequency.value = 52;
     gain.gain.value = 0.0001;
     secondOscillator.type = "triangle";
     secondOscillator.frequency.value = 138;
