@@ -27,11 +27,14 @@ export function CaughtCardView({ cardUrl, caption, onRetry }: CaughtCardViewProp
 
   return (
     <section className="caught-card-view">
-      <img src={cardUrl} alt={caption} />
+      <div className="caught-image-wrap">
+        <img src={cardUrl} alt={caption} />
+      </div>
       <div className="caught-actions">
         <div>
-          <p className="eyebrow">Caught</p>
+          <p className="eyebrow">Evidence saved</p>
           <h2>{caption}</h2>
+          <p>The Watcher caught the exact frame. Nothing left the device unless you share it.</p>
         </div>
         <div className="button-row">
           <button type="button" onClick={onRetry}>

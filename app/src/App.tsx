@@ -5,6 +5,7 @@ import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
 import { CaughtCardView } from "./components/CaughtCardView";
 import { DebugPanel } from "./components/DebugPanel";
+import { RitualCurtain } from "./components/RitualCurtain";
 import { RitualHud } from "./components/RitualHud";
 import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
@@ -47,7 +48,7 @@ export function App() {
     return Math.min(1, activeElapsedMs / ritual.durationMs + signalPressure * 0.45);
   }, [elapsedMs, gameState.phase, ritual.durationMs, ritual.introMs, signalPressure]);
   const violationProgress =
-    gameState.phase === "playing" && gameState.violationStartedAt
+    gameState.phase === "playing" && gameState.violationStartedAt && ritual.failHoldMs > 0
       ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / ritual.failHoldMs))
       : 0;
 
@@ -181,6 +182,14 @@ export function App() {
           onTrackerStatus={setTrackerStatus}
           onVideoReady={handleVideoReady}
         >
+          {gameState.phase === "playing" && ritualTiming.stage === "intro" ? (
+            <RitualCurtain ritual={ritual} introCountdown={ritualTiming.introCountdown} />
+          ) : null}
+          {gameState.phase === "playing" && ritualTiming.stage === "active" ? (
+            <div className="active-rule-banner" aria-hidden="true">
+              <span>{ritual.instruction}</span>
+            </div>
+          ) : null}
           <button type="button" className="debug-toggle" onClick={() => setDebugOpen((open) => !open)}>
             Debug
           </button>
