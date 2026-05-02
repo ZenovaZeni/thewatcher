@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getTensionAudioLevels } from "./audioLevels";
 import type { WatcherAudioCue } from "./scareCues";
 
 type AudioWindow = Window &
@@ -58,14 +59,14 @@ function playBreath(audio: AudioContext, intensity: number) {
   breathFilter.type = "lowpass";
   breathFilter.frequency.setValueAtTime(360 + intensity * 180, now);
   breathGain.gain.setValueAtTime(0.0001, now);
-  breathGain.gain.exponentialRampToValueAtTime(0.04 * intensity, now + 0.08);
+  breathGain.gain.exponentialRampToValueAtTime(0.13 * intensity, now + 0.08);
   breathGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
 
   knock.type = "sine";
   knock.frequency.setValueAtTime(74, now + 0.1);
   knock.frequency.exponentialRampToValueAtTime(39, now + 0.24);
   knockGain.gain.setValueAtTime(0.0001, now + 0.1);
-  knockGain.gain.exponentialRampToValueAtTime(0.055 * intensity, now + 0.12);
+  knockGain.gain.exponentialRampToValueAtTime(0.16 * intensity, now + 0.12);
   knockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
 
   breath.connect(breathFilter);
@@ -91,14 +92,14 @@ function playGlitch(audio: AudioContext, intensity: number) {
   filter.frequency.setValueAtTime(940 + intensity * 840, now);
   filter.Q.setValueAtTime(8, now);
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.05 * intensity, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.14 * intensity, now + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
 
   tone.type = "square";
   tone.frequency.setValueAtTime(118, now);
   tone.frequency.exponentialRampToValueAtTime(402, now + 0.06);
   toneGain.gain.setValueAtTime(0.0001, now);
-  toneGain.gain.exponentialRampToValueAtTime(0.028 * intensity, now + 0.01);
+  toneGain.gain.exponentialRampToValueAtTime(0.09 * intensity, now + 0.01);
   toneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
 
   glitch.connect(filter);
@@ -115,7 +116,9 @@ function playGlitch(audio: AudioContext, intensity: number) {
 export function useTensionAudio(active: boolean, threat: number, failed: boolean, cue: WatcherAudioCue | null = null) {
   const audioRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const secondOscillatorRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
+  const secondGainRef = useRef<GainNode | null>(null);
   const cueIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -125,40 +128,60 @@ export function useTensionAudio(active: boolean, threat: number, failed: boolean
     if (!AudioContextClass) return;
     const audio = audioRef.current ?? new AudioContextClass();
     const oscillator = audio.createOscillator();
+    const secondOscillator = audio.createOscillator();
     const gain = audio.createGain();
+    const secondGain = audio.createGain();
 
     audioRef.current = audio;
     if (audio.state === "suspended") {
       void audio.resume();
     }
-    oscillator.type = "sine";
-    oscillator.frequency.value = 44;
+    oscillator.type = "sawtooth";
+    oscillator.frequency.value = 82;
     gain.gain.value = 0.0001;
+    secondOscillator.type = "triangle";
+    secondOscillator.frequency.value = 138;
+    secondGain.gain.value = 0.0001;
     oscillator.connect(gain);
+    secondOscillator.connect(secondGain);
     gain.connect(audio.destination);
+    secondGain.connect(audio.destination);
     oscillator.start();
+    secondOscillator.start();
 
     oscillatorRef.current = oscillator;
+    secondOscillatorRef.current = secondOscillator;
     gainRef.current = gain;
+    secondGainRef.current = secondGain;
 
     return () => {
       oscillator.stop();
+      secondOscillator.stop();
       oscillator.disconnect();
+      secondOscillator.disconnect();
       gain.disconnect();
+      secondGain.disconnect();
       oscillatorRef.current = null;
+      secondOscillatorRef.current = null;
       gainRef.current = null;
+      secondGainRef.current = null;
     };
   }, [active]);
 
   useEffect(() => {
     const audio = audioRef.current;
     const oscillator = oscillatorRef.current;
+    const secondOscillator = secondOscillatorRef.current;
     const gain = gainRef.current;
-    if (!audio || !oscillator || !gain) return;
+    const secondGain = secondGainRef.current;
+    if (!audio || !oscillator || !secondOscillator || !gain || !secondGain) return;
 
     const now = audio.currentTime;
-    oscillator.frequency.setTargetAtTime(failed ? 92 : 44 + threat * 36, now, 0.08);
-    gain.gain.setTargetAtTime(failed ? 0.08 : 0.012 + threat * 0.035, now, 0.12);
+    const levels = getTensionAudioLevels(threat, failed);
+    oscillator.frequency.setTargetAtTime(levels.primaryFrequency, now, 0.08);
+    secondOscillator.frequency.setTargetAtTime(levels.secondaryFrequency, now, 0.16);
+    gain.gain.setTargetAtTime(levels.primaryGain, now, 0.12);
+    secondGain.gain.setTargetAtTime(levels.secondaryGain, now, 0.18);
   }, [failed, threat]);
 
   useEffect(() => {
