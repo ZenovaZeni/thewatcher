@@ -19,7 +19,7 @@ const waitingSample: TrackingSample = {
 };
 
 export function App() {
-  const { stream, error, diagnostic, requestCamera } = useCamera();
+  const { stream, error, diagnostic, devices, requestCamera } = useCamera();
   const [demoStream, setDemoStream] = useState<MediaStream | null>(null);
   const [gameState, setGameState] = useState(createInitialGameState);
   const [sample, setSample] = useState<TrackingSample>(waitingSample);
@@ -221,6 +221,7 @@ export function App() {
             <div className="permission-help">
               <p className="error-text">{error}</p>
               {diagnostic ? <p>{diagnostic}</p> : null}
+              <p>{devices.length > 0 ? `Browser can see: ${devices.join(", ")}.` : "Browser has not exposed any camera devices yet."}</p>
               <p>Try the site controls in the address bar, or open localhost in a regular browser. The demo feed below keeps everything local and lets you test the loop.</p>
             </div>
           ) : null}

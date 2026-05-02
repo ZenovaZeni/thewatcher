@@ -4,6 +4,7 @@ export type CameraState = {
   stream: MediaStream | null;
   error: string | null;
   diagnostic: string | null;
+  devices: string[];
   requestCamera: () => Promise<boolean>;
 };
 
@@ -11,6 +12,18 @@ export function useCamera(): CameraState {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [diagnostic, setDiagnostic] = useState<string | null>(null);
+  const [devices, setDevices] = useState<string[]>([]);
+
+  const refreshDevices = useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+
+    const nextDevices = await navigator.mediaDevices.enumerateDevices();
+    setDevices(
+      nextDevices
+        .filter((device) => device.kind === "videoinput")
+        .map((device, index) => device.label || `Camera ${index + 1}`),
+    );
+  }, []);
 
   const requestCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -20,18 +33,27 @@ export function useCamera(): CameraState {
     }
 
     try {
-      const nextStream = await navigator.mediaDevices.getUserMedia({
+      await refreshDevices();
+      const preferredConstraints: MediaStreamConstraints = {
         video: {
           facingMode: "user",
           width: { ideal: 720 },
           height: { ideal: 1280 },
         },
         audio: false,
-      });
+      };
+      const basicConstraints: MediaStreamConstraints = {
+        video: true,
+        audio: false,
+      };
+      const nextStream = await navigator.mediaDevices
+        .getUserMedia(preferredConstraints)
+        .catch(() => navigator.mediaDevices.getUserMedia(basicConstraints));
 
       setStream(nextStream);
       setError(null);
       setDiagnostic(null);
+      await refreshDevices();
       return true;
     } catch (caught) {
       const cameraError = caught instanceof DOMException ? caught : null;
@@ -48,9 +70,14 @@ export function useCamera(): CameraState {
       }
 
       setDiagnostic(`${name}: ${cameraError?.message || "getUserMedia was rejected without a permission prompt."}`);
+      await refreshDevices();
       return false;
     }
-  }, []);
+  }, [refreshDevices]);
+
+  useEffect(() => {
+    void refreshDevices();
+  }, [refreshDevices]);
 
   useEffect(() => {
     return () => {
@@ -60,5 +87,5 @@ export function useCamera(): CameraState {
     };
   }, [stream]);
 
-  return { stream, error, diagnostic, requestCamera };
+  return { stream, error, diagnostic, devices, requestCamera };
 }
