@@ -13,6 +13,7 @@ import { createInitialGameState, startCalibration, startGame, tickGame } from ".
 import { watcherRituals } from "./game/rituals";
 import { getActiveRitual } from "./game/ritualSegments";
 import { getRitualTiming } from "./game/ritualTiming";
+import { getWatcherScare } from "./game/scare";
 import type { TrackingSample } from "./game/types";
 import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
 
@@ -67,6 +68,13 @@ export function App() {
     gameState.phase === "playing" && gameState.violationStartedAt && activeRitual.failHoldMs > 0
       ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / activeRitual.failHoldMs))
       : 0;
+  const watcherScare = getWatcherScare({
+    completedRituals,
+    totalRituals: watcherRituals.length,
+    threat,
+    violationProgress,
+    phase: gameState.phase,
+  });
 
   useTensionAudio(gameState.phase === "playing" || gameState.phase === "failed", threat, gameState.phase === "failed");
 
@@ -193,6 +201,7 @@ export function App() {
           stream={activeStream}
           threat={threat}
           signalPressure={gameState.phase === "playing" && ritualTiming.stage === "active" ? ritualPressure : 0}
+          watcherScare={watcherScare}
           demoMode={isDemoMode}
           onSample={handleSample}
           onTrackerStatus={setTrackerStatus}
@@ -264,6 +273,7 @@ export function App() {
             <section className="success-panel">
               <p className="eyebrow">Ritual survived</p>
               <h2>{encounterStatus.successMessage}</h2>
+              <p>{watcherScare.revealMessage}</p>
               <p>{encounterStatus.completedLabel}</p>
             </section>
           ) : null}

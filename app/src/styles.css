@@ -145,6 +145,8 @@ h2 {
 .camera-vignette,
 .camera-breath,
 .edge-presence,
+.watcher-presence,
+.watcher-smear,
 .reflection-face,
 .rule-static,
 .scan-lines {
@@ -164,6 +166,60 @@ h2 {
     radial-gradient(circle at 78% 34%, rgba(156, 24, 42, 0.22), transparent 24%),
     radial-gradient(circle at 14% 72%, rgba(0, 0, 0, 0.62), transparent 34%);
   animation: camera-breath 3.4s ease-in-out infinite;
+}
+
+.watcher-presence {
+  top: auto;
+  bottom: 8%;
+  z-index: 1;
+  width: min(34vw, 230px);
+  height: min(70vh, 620px);
+  border-radius: 50% 50% 12% 12%;
+  background:
+    radial-gradient(circle at 39% 17%, rgba(255, 248, 240, 0.18) 0 1.2%, transparent 1.8%),
+    radial-gradient(circle at 61% 17%, rgba(255, 248, 240, 0.16) 0 1.2%, transparent 1.8%),
+    radial-gradient(ellipse at 50% 18%, rgba(0, 0, 0, 0.98) 0 18%, rgba(0, 0, 0, 0.86) 22%, transparent 42%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.2));
+  filter: blur(1.4px);
+  mix-blend-mode: multiply;
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease;
+}
+
+.watcher-presence-left {
+  left: max(-92px, -8vw);
+}
+
+.watcher-presence-right {
+  right: max(-92px, -8vw);
+}
+
+.watcher-eye {
+  position: absolute;
+  top: 16%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 248, 240, 0.78);
+  box-shadow: 0 0 22px rgba(255, 248, 240, 0.62);
+}
+
+.watcher-eye-left {
+  left: 40%;
+}
+
+.watcher-eye-right {
+  right: 40%;
+}
+
+.watcher-smear {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(0, 0, 0, 0.52) 32%, transparent 46% 54%, rgba(0, 0, 0, 0.46) 68%, transparent 82%),
+    repeating-linear-gradient(180deg, transparent 0 26px, rgba(244, 239, 231, 0.12) 26px 28px, transparent 28px 58px);
+  filter: blur(7px);
+  mix-blend-mode: multiply;
 }
 
 .edge-presence {

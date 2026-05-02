@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { WatcherScare } from "../game/scare";
 import type { TrackingSample } from "../game/types";
 import { createFaceTracker, type FaceTracker } from "../vision/faceTracker";
 
@@ -6,6 +7,7 @@ type CameraStageProps = {
   stream: MediaStream;
   threat: number;
   signalPressure: number;
+  watcherScare: WatcherScare;
   demoMode?: boolean;
   onSample: (sample: TrackingSample) => void;
   onTrackerStatus?: (status: string) => void;
@@ -25,6 +27,7 @@ export function CameraStage({
   stream,
   threat,
   signalPressure,
+  watcherScare,
   demoMode = false,
   onSample,
   onTrackerStatus,
@@ -103,6 +106,23 @@ export function CameraStage({
   return (
     <div className="camera-stage">
       <video ref={videoRef} playsInline muted />
+      <div
+        className={`watcher-presence watcher-presence-${watcherScare.peekSide}`}
+        style={{
+          opacity: watcherScare.presence,
+          transform: `translateY(${18 - watcherScare.presence * 42}px) scale(${watcherScare.scale})`,
+        }}
+      >
+        <span className="watcher-eye watcher-eye-left" style={{ opacity: watcherScare.eyeGlow }} />
+        <span className="watcher-eye watcher-eye-right" style={{ opacity: watcherScare.eyeGlow }} />
+      </div>
+      <div
+        className="watcher-smear"
+        style={{
+          opacity: watcherScare.distortion * 0.44,
+          transform: `translateX(${(watcherScare.peekSide === "left" ? -1 : 1) * watcherScare.distortion * 18}px)`,
+        }}
+      />
       <div
         className="edge-presence edge-presence-left"
         style={{ opacity: Math.max(0, threat - 0.18) * 0.72, transform: `translateY(${12 - threat * 30}px)` }}
