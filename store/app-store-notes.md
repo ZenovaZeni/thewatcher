@@ -2,7 +2,7 @@
 
 ## Working Title
 
-Do Not Look Away
+The Watcher
 
 ## Short Pitch
 
@@ -20,3 +20,6 @@ Short, replayable horror challenges built for phones. The camera watches your fa
 
 The first version should avoid gore. Fear should come from suspense, jump timing, distorted overlays, and personal camera reactions.
 
+## Privacy Positioning
+
+Camera processing should be described clearly and simply: face tracking runs on device, caught cards are created locally, and sharing happens only after the player chooses it.

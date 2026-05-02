@@ -1,4 +1,4 @@
-# Do Not Look Away
+# The Watcher
 
 Phone-first camera horror game where the player survives short rituals while the game watches their face.
 
@@ -20,3 +20,24 @@ The working product shape is a browser-first prototype that can later be wrapped
 5. Failure freezes the moment and generates a caught card.
 6. Player retries, shares, or unlocks the next ritual/entity pack.
 
+## Run the Prototype
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+Open the Vite URL on a browser with camera support. The prototype is phone-first, so mobile portrait is the target shape.
+
+## Checks
+
+```bash
+cd app
+npm test
+npm run build
+```
+
+## Privacy Shape
+
+The prototype uses the browser camera and MediaPipe face tracking locally. Camera frames are not uploaded by the app. Caught cards are rendered in the browser from the current video frame and are shared only when the player taps Share.
