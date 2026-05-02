@@ -5,12 +5,21 @@ import { createFaceTracker, type FaceTracker } from "../vision/faceTracker";
 type CameraStageProps = {
   stream: MediaStream;
   threat: number;
+  demoMode?: boolean;
   onSample: (sample: TrackingSample) => void;
   onVideoReady: (video: HTMLVideoElement | null) => void;
   children?: ReactNode;
 };
 
-export function CameraStage({ stream, threat, onSample, onVideoReady, children }: CameraStageProps) {
+const demoSample: TrackingSample = {
+  facePresent: true,
+  blinkScore: 0,
+  lookAwayScore: 0.02,
+  motionScore: 0.03,
+  smileScore: 0,
+};
+
+export function CameraStage({ stream, threat, demoMode = false, onSample, onVideoReady, children }: CameraStageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackerRef = useRef<FaceTracker | null>(null);
   const [trackerStatus, setTrackerStatus] = useState("Warming camera");
@@ -29,6 +38,11 @@ export function CameraStage({ stream, threat, onSample, onVideoReady, children }
   }, [onVideoReady, stream]);
 
   useEffect(() => {
+    if (demoMode) {
+      setTrackerStatus("Demo feed active");
+      return;
+    }
+
     let cancelled = false;
 
     createFaceTracker()
@@ -45,7 +59,7 @@ export function CameraStage({ stream, threat, onSample, onVideoReady, children }
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [demoMode]);
 
   useEffect(() => {
     let frame = 0;
@@ -54,7 +68,9 @@ export function CameraStage({ stream, threat, onSample, onVideoReady, children }
       const video = videoRef.current;
       const tracker = trackerRef.current;
 
-      if (video && tracker && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      if (demoMode) {
+        onSample(demoSample);
+      } else if (video && tracker && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
         onSample(tracker.detect(video, performance.now()));
       }
 
@@ -66,7 +82,7 @@ export function CameraStage({ stream, threat, onSample, onVideoReady, children }
     return () => {
       cancelAnimationFrame(frame);
     };
-  }, [onSample]);
+  }, [demoMode, onSample]);
 
   return (
     <div className="camera-stage">

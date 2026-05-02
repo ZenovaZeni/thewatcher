@@ -83,6 +83,15 @@ h2 {
   color: #ff8b98;
 }
 
+.permission-help {
+  display: grid;
+  gap: 8px;
+}
+
+.permission-help p {
+  font-size: 14px;
+}
+
 .camera-stage {
   position: fixed;
   inset: 0;
@@ -233,4 +242,14 @@ h2 {
 .secondary-button {
   border-color: rgba(244, 239, 231, 0.22);
   background: rgba(244, 239, 231, 0.08);
+}
+
+.demo-blink-button {
+  position: fixed;
+  top: max(46px, calc(env(safe-area-inset-top) + 40px));
+  right: 14px;
+  z-index: 4;
+  min-height: 42px;
+  border-color: rgba(255, 248, 240, 0.22);
+  background: rgba(5, 5, 5, 0.72);
 }

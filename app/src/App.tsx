@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTensionAudio } from "./audio/useTensionAudio";
+import { createDemoStream } from "./camera/createDemoStream";
 import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
 import { CaughtCardView } from "./components/CaughtCardView";
@@ -18,7 +19,8 @@ const waitingSample: TrackingSample = {
 };
 
 export function App() {
-  const { stream, error, requestCamera } = useCamera();
+  const { stream, error, diagnostic, requestCamera } = useCamera();
+  const [demoStream, setDemoStream] = useState<MediaStream | null>(null);
   const [gameState, setGameState] = useState(createInitialGameState);
   const [sample, setSample] = useState<TrackingSample>(waitingSample);
   const [hasTrackingSample, setHasTrackingSample] = useState(false);
@@ -26,6 +28,8 @@ export function App() {
   const [now, setNow] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const stableFaceStartedAtRef = useRef<number | null>(null);
+  const activeStream = stream ?? demoStream;
+  const isDemoMode = Boolean(demoStream && !stream);
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
@@ -49,6 +53,26 @@ export function App() {
     setCaughtCardUrl(null);
     setGameState(startCalibration(createInitialGameState()));
   }, [requestCamera]);
+
+  const startDemo = useCallback(() => {
+    demoStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+    setDemoStream(createDemoStream());
+    stableFaceStartedAtRef.current = null;
+    setSample(waitingSample);
+    setHasTrackingSample(false);
+    setCaughtCardUrl(null);
+    setGameState(startCalibration(createInitialGameState()));
+  }, [demoStream]);
+
+  useEffect(() => {
+    return () => {
+      demoStream?.getTracks().forEach((track) => {
+        track.stop();
+      });
+    };
+  }, [demoStream]);
 
   const retry = useCallback(() => {
     setSample(waitingSample);
@@ -84,6 +108,28 @@ export function App() {
     [gameState.phase],
   );
 
+  const triggerDemoBlink = useCallback(() => {
+    if (!isDemoMode) return;
+
+    setHasTrackingSample(true);
+    setSample({
+      facePresent: true,
+      blinkScore: 1,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0,
+    });
+    setGameState((state) =>
+      tickGame(state, performance.now(), {
+        facePresent: true,
+        blinkScore: 1,
+        lookAwayScore: 0,
+        motionScore: 0,
+        smileScore: 0,
+      }),
+    );
+  }, [isDemoMode]);
+
   useEffect(() => {
     if (gameState.phase !== "failed" || caughtCardUrl || !gameState.failureReason || !gameState.failedAt) return;
 
@@ -115,10 +161,11 @@ export function App() {
 
   return (
     <main className="app-shell">
-      {stream ? (
+      {activeStream ? (
         <CameraStage
-          stream={stream}
+          stream={activeStream}
           threat={threat}
+          demoMode={isDemoMode}
           onSample={handleSample}
           onVideoReady={handleVideoReady}
         >
@@ -131,6 +178,11 @@ export function App() {
           ) : null}
           {gameState.phase === "playing" ? (
             <RitualHud ritual={ritual} secondsRemaining={secondsRemaining} threat={threat} />
+          ) : null}
+          {isDemoMode && gameState.phase === "playing" ? (
+            <button type="button" className="demo-blink-button" onClick={triggerDemoBlink}>
+              Trigger Blink
+            </button>
           ) : null}
           {gameState.phase === "failed" && caughtCardUrl && gameState.failureReason && gameState.failedAt ? (
             <CaughtCardView
@@ -165,10 +217,21 @@ export function App() {
           <p className="eyebrow">The Watcher</p>
           <h1>The Watcher</h1>
           <p>Your camera stays on this device. Blink, look away, or leave the frame and it gets closer.</p>
-          {error ? <p className="error-text">{error}</p> : null}
+          {error ? (
+            <div className="permission-help">
+              <p className="error-text">{error}</p>
+              {diagnostic ? <p>{diagnostic}</p> : null}
+              <p>Try the site controls in the address bar, or open localhost in a regular browser. The demo feed below keeps everything local and lets you test the loop.</p>
+            </div>
+          ) : null}
           <button type="button" onClick={begin}>
             Begin
           </button>
+          {error ? (
+            <button type="button" className="secondary-button" onClick={startDemo}>
+              Play Demo Feed
+            </button>
+          ) : null}
         </section>
       )}
     </main>
