@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite --host 127.0.0.1 --port 42873 --strictPort",
     "build": "tsc && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1 --port 42874 --strictPort"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22",
