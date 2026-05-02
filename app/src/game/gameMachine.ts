@@ -2,12 +2,16 @@ import { evaluateRitual, watcherRituals } from "./rituals";
 import { getActiveRitual } from "./ritualSegments";
 import type { TrackingSample } from "./types";
 
-export type GamePhase = "idle" | "calibrating" | "playing" | "failed" | "won";
+const RITUAL_SUCCESS_BEAT_MS = 1500;
+
+export type GamePhase = "idle" | "calibrating" | "playing" | "ritualComplete" | "failed" | "won";
 
 export type GameState = {
   phase: GamePhase;
   currentRitualIndex: number;
   ritualStartedAt: number;
+  ritualCompletedAt: number | null;
+  completedRitualIndex: number | null;
   activeRuleId: string | null;
   violationStartedAt: number | null;
   failureReason: string | null;
@@ -19,6 +23,8 @@ export function createInitialGameState(): GameState {
     phase: "idle",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    ritualCompletedAt: null,
+    completedRitualIndex: null,
     activeRuleId: null,
     violationStartedAt: null,
     failureReason: null,
@@ -32,6 +38,8 @@ export function startCalibration(state: GameState): GameState {
     phase: "calibrating",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    ritualCompletedAt: null,
+    completedRitualIndex: null,
     activeRuleId: null,
     violationStartedAt: null,
     failureReason: null,
@@ -45,6 +53,8 @@ export function startGame(state: GameState, now: number): GameState {
     phase: "playing",
     currentRitualIndex: 0,
     ritualStartedAt: now,
+    ritualCompletedAt: null,
+    completedRitualIndex: null,
     activeRuleId: watcherRituals[0].id,
     violationStartedAt: null,
     failureReason: null,
@@ -53,6 +63,30 @@ export function startGame(state: GameState, now: number): GameState {
 }
 
 export function tickGame(state: GameState, now: number, sample: TrackingSample): GameState {
+  if (state.phase === "ritualComplete") {
+    const completedAt = state.ritualCompletedAt ?? now;
+
+    if (now - completedAt < RITUAL_SUCCESS_BEAT_MS) {
+      return state;
+    }
+
+    const nextIndex = state.currentRitualIndex + 1;
+
+    if (nextIndex >= watcherRituals.length) {
+      return { ...state, phase: "won", completedRitualIndex: watcherRituals.length - 1 };
+    }
+
+    return {
+      ...state,
+      phase: "playing",
+      currentRitualIndex: nextIndex,
+      ritualStartedAt: now,
+      ritualCompletedAt: null,
+      activeRuleId: watcherRituals[nextIndex].id,
+      violationStartedAt: null,
+    };
+  }
+
   if (state.phase !== "playing") {
     return state;
   }
@@ -88,15 +122,11 @@ export function tickGame(state: GameState, now: number, sample: TrackingSample):
 
   const nextIndex = state.currentRitualIndex + 1;
 
-  if (nextIndex >= watcherRituals.length) {
-    return { ...state, phase: "won" };
-  }
-
   return {
     ...stateForRule,
-    currentRitualIndex: nextIndex,
-    ritualStartedAt: now,
-    activeRuleId: watcherRituals[nextIndex].id,
+    phase: "ritualComplete",
+    ritualCompletedAt: now,
+    completedRitualIndex: state.currentRitualIndex,
     violationStartedAt: null,
   };
 }

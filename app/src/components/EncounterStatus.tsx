@@ -14,6 +14,8 @@ export function EncounterStatus({ status }: EncounterStatusProps) {
       <div className="encounter-progress" aria-hidden="true">
         <span style={{ width: `${status.progressPercent}%` }} />
       </div>
+      <strong>{status.completedLabel}</strong>
+      <p className="encounter-objective">{status.objective}</p>
       <p>{status.message}</p>
     </aside>
   );

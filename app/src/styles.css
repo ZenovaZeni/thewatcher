@@ -278,6 +278,17 @@ h2 {
   text-transform: uppercase;
 }
 
+.encounter-status strong {
+  color: #fff8f0;
+  font-size: 14px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.encounter-status .encounter-objective {
+  color: #d15162;
+}
+
 .ritual-curtain {
   pointer-events: none;
   position: fixed;
@@ -363,6 +374,7 @@ h2 {
 .ritual-hud,
 .failure-panel,
 .calibration-panel,
+.success-panel,
 .win-panel {
   position: fixed;
   left: 14px;
@@ -432,8 +444,25 @@ h2 {
 
 .failure-panel h2,
 .calibration-panel h2,
+.success-panel h2,
 .win-panel h2 {
   color: #fff8f0;
+}
+
+.success-panel {
+  left: 50%;
+  right: auto;
+  bottom: 50%;
+  width: min(560px, calc(100vw - 28px));
+  border-color: rgba(209, 81, 98, 0.38);
+  background: rgba(20, 4, 7, 0.76);
+  text-align: center;
+  transform: translate(-50%, 50%);
+}
+
+.success-panel h2 {
+  font-size: clamp(34px, 8vw, 72px);
+  text-transform: uppercase;
 }
 
 .win-panel {

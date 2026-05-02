@@ -41,7 +41,13 @@ export function App() {
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
   const activeRitual = getActiveRitual(ritual, now, gameState.ritualStartedAt);
-  const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length);
+  const completedRituals =
+    gameState.phase === "won"
+      ? watcherRituals.length
+      : gameState.phase === "ritualComplete"
+        ? (gameState.completedRitualIndex ?? gameState.currentRitualIndex) + 1
+        : gameState.currentRitualIndex;
+  const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length, completedRituals);
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
   const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
   const ritualPressure =
@@ -192,7 +198,9 @@ export function App() {
           onTrackerStatus={setTrackerStatus}
           onVideoReady={handleVideoReady}
         >
-          {gameState.phase === "playing" ? <EncounterStatus status={encounterStatus} /> : null}
+          {gameState.phase === "playing" || gameState.phase === "ritualComplete" ? (
+            <EncounterStatus status={encounterStatus} />
+          ) : null}
           {gameState.phase === "playing" && ritualTiming.stage === "intro" ? (
             <RitualCurtain ritual={ritual} introCountdown={ritualTiming.introCountdown} />
           ) : null}
@@ -221,6 +229,8 @@ export function App() {
             <RitualHud
               ritual={ritual}
               activeRitual={activeRitual}
+              ritualNumber={gameState.currentRitualIndex + 1}
+              totalRituals={watcherRituals.length}
               timingStage={ritualTiming.stage}
               introCountdown={ritualTiming.introCountdown}
               secondsRemaining={ritualTiming.secondsRemaining}
@@ -250,11 +260,18 @@ export function App() {
               <h2>Freezing the frame.</h2>
             </section>
           ) : null}
+          {gameState.phase === "ritualComplete" ? (
+            <section className="success-panel">
+              <p className="eyebrow">Ritual survived</p>
+              <h2>{encounterStatus.successMessage}</h2>
+              <p>{encounterStatus.completedLabel}</p>
+            </section>
+          ) : null}
           {gameState.phase === "won" ? (
             <section className="win-panel">
-              <p className="eyebrow">Attempt complete</p>
+              <p className="eyebrow">Entity repelled</p>
               <h2>You survived The Watcher.</h2>
-              <p>The phone did not blink. You did.</p>
+              <p>All {watcherRituals.length} rituals are complete. The phone has no evidence left to take.</p>
               <button type="button" onClick={retry}>
                 Play again
               </button>
@@ -265,7 +282,7 @@ export function App() {
         <section className="title-screen">
           <p className="eyebrow">The Watcher</p>
           <h1>The Watcher</h1>
-          <p>Your camera stays on this device. Blink, look away, or leave the frame and it gets closer.</p>
+          <p>Survive six short rituals while the phone watches your face. Blink, look away, or leave the frame and it keeps the evidence.</p>
           {error ? (
             <div className="permission-help">
               <p className="error-text">{error}</p>

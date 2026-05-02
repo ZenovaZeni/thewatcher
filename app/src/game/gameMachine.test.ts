@@ -115,4 +115,44 @@ describe("gameMachine", () => {
     expect(stopped.activeRuleId).toBe("watcher-obey-face:stop-smiling:Stop smiling.");
     expect(stopped.violationStartedAt).toBeNull();
   });
+
+  it("pauses on a ritual-complete beat before advancing", () => {
+    const state = startGame(createInitialGameState(), 1000);
+    const complete = tickGame(state, 25001, openEyesSample);
+
+    expect(complete.phase).toBe("ritualComplete");
+    expect(complete.currentRitualIndex).toBe(0);
+    expect(complete.completedRitualIndex).toBe(0);
+    expect(complete.ritualCompletedAt).toBe(25001);
+  });
+
+  it("advances to the next ritual after the success beat", () => {
+    const state = startGame(createInitialGameState(), 1000);
+    const complete = tickGame(state, 25001, openEyesSample);
+    const next = tickGame(complete, 26601, openEyesSample);
+
+    expect(next.phase).toBe("playing");
+    expect(next.currentRitualIndex).toBe(1);
+    expect(next.ritualStartedAt).toBe(26601);
+    expect(next.activeRuleId).toBe("watcher-look-away");
+  });
+
+  it("wins after the final ritual success beat", () => {
+    const state = {
+      ...startGame(createInitialGameState(), 1000),
+      currentRitualIndex: 5,
+      activeRuleId: "watcher-obey-face",
+    };
+    const complete = tickGame(state, 22001, {
+      facePresent: true,
+      blinkScore: 0,
+      lookAwayScore: 0,
+      motionScore: 0,
+      smileScore: 0.8,
+    });
+    const won = tickGame(complete, 23601, openEyesSample);
+
+    expect(won.phase).toBe("won");
+    expect(won.completedRitualIndex).toBe(5);
+  });
 });
