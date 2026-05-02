@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTensionAudio } from "./audio/useTensionAudio";
 import { useCamera } from "./camera/useCamera";
 import { CameraStage } from "./components/CameraStage";
+import { CaughtCardView } from "./components/CaughtCardView";
 import { RitualHud } from "./components/RitualHud";
 import { createInitialGameState, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
 import type { TrackingSample } from "./game/types";
+import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
 
 const waitingSample: TrackingSample = {
   facePresent: false,
@@ -20,6 +22,7 @@ export function App() {
   const [gameState, setGameState] = useState(createInitialGameState);
   const [sample, setSample] = useState<TrackingSample>(waitingSample);
   const [hasTrackingSample, setHasTrackingSample] = useState(false);
+  const [caughtCardUrl, setCaughtCardUrl] = useState<string | null>(null);
   const [now, setNow] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -43,8 +46,19 @@ export function App() {
   const retry = useCallback(() => {
     setSample(waitingSample);
     setHasTrackingSample(false);
+    setCaughtCardUrl(null);
     setGameState(startGame(createInitialGameState(), performance.now()));
   }, []);
+
+  useEffect(() => {
+    if (gameState.phase !== "failed" || caughtCardUrl || !gameState.failureReason || !gameState.failedAt) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const failureElapsedMs = Math.max(0, gameState.failedAt - gameState.ritualStartedAt);
+    setCaughtCardUrl(renderCaughtCard(video, gameState.failureReason, "The Watcher", failureElapsedMs));
+  }, [caughtCardUrl, gameState]);
 
   useEffect(() => {
     let frame = 0;
@@ -80,14 +94,21 @@ export function App() {
           {gameState.phase === "playing" ? (
             <RitualHud ritual={ritual} secondsRemaining={secondsRemaining} threat={threat} />
           ) : null}
-          {gameState.phase === "failed" ? (
+          {gameState.phase === "failed" && caughtCardUrl && gameState.failureReason && gameState.failedAt ? (
+            <CaughtCardView
+              cardUrl={caughtCardUrl}
+              caption={buildCaughtCardCaption(
+                gameState.failureReason,
+                "The Watcher",
+                gameState.failedAt - gameState.ritualStartedAt,
+              )}
+              onRetry={retry}
+            />
+          ) : null}
+          {gameState.phase === "failed" && !caughtCardUrl ? (
             <section className="failure-panel">
               <p className="eyebrow">Caught</p>
-              <h2>{gameState.failureReason}</h2>
-              <p>The Watcher moved while the frame was yours.</p>
-              <button type="button" onClick={retry}>
-                Retry
-              </button>
+              <h2>Freezing the frame.</h2>
             </section>
           ) : null}
           {gameState.phase === "won" ? (
