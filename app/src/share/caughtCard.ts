@@ -7,7 +7,16 @@ export function formatTime(ms: number): string {
 }
 
 export function buildCaughtCardCaption(reason: string, _entityName: string, elapsedMs: number): string {
-  return `${reason} AT ${formatTime(elapsedMs)}`;
+  const roasts: Record<string, string> = {
+    "BLINK DETECTED": "BLINKED LIKE THE PHONE OWED YOU MONEY",
+    "YOU LOOKED AWAY": "YOU LOOKED AWAY. IT DID NOT.",
+    "FACE LOST": "LEFT THE FRAME LIKE THAT WOULD HELP",
+    "MOVEMENT DETECTED": "PANICKED ON CAMERA",
+    "SMILE MISSING": "REFUSED TO SMILE FOR THE HAUNTED PHONE",
+    "SMILE DETECTED": "SMILED AT THE WORST POSSIBLE TIME",
+  };
+
+  return `${roasts[reason] ?? reason} AT ${formatTime(elapsedMs)}`;
 }
 
 export function buildCaughtCardEvidenceDetails(reason: string, entityName: string, elapsedMs: number) {

@@ -14,6 +14,7 @@ import { createInitialGameState, startCalibration, startGame, tickGame } from ".
 import { watcherRituals } from "./game/rituals";
 import { getActiveRitual } from "./game/ritualSegments";
 import { getRitualTiming } from "./game/ritualTiming";
+import { getRunScore } from "./game/runScore";
 import { getWatcherScare } from "./game/scare";
 import type { TrackingSample } from "./game/types";
 import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
@@ -52,6 +53,7 @@ export function App() {
         ? (gameState.completedRitualIndex ?? gameState.currentRitualIndex) + 1
         : gameState.currentRitualIndex;
   const encounterStatus = getEncounterStatus(gameState.currentRitualIndex, watcherRituals.length, completedRituals);
+  const runScore = getRunScore(gameState.phase, completedRituals, watcherRituals.length);
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
   const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
   const ritualPressure =
@@ -239,7 +241,7 @@ export function App() {
           onVideoReady={handleVideoReady}
         >
           {gameState.phase === "playing" || gameState.phase === "ritualComplete" ? (
-            <EncounterStatus status={encounterStatus} />
+            <EncounterStatus status={encounterStatus} runScore={runScore} />
           ) : null}
           {gameState.phase === "playing" && ritualTiming.stage === "intro" ? (
             <RitualCurtain ritual={ritual} introCountdown={ritualTiming.introCountdown} />
@@ -312,7 +314,7 @@ export function App() {
             <section className="win-panel">
               <p className="eyebrow">Entity repelled</p>
               <h2>You survived The Watcher.</h2>
-              <p>All {watcherRituals.length} rituals are complete. The phone has no evidence left to take.</p>
+              <p>{runScore.streakLabel}. The phone has no evidence left to take.</p>
               <button type="button" onClick={retry}>
                 Play again
               </button>
@@ -323,7 +325,7 @@ export function App() {
         <section className="title-screen">
           <p className="eyebrow">The Watcher</p>
           <h1>The Watcher</h1>
-          <p>Survive six short rituals while the phone watches your face. Blink, look away, or leave the frame and it keeps the evidence.</p>
+          <p>Fast camera commands. Obey the phone, build a streak, and try not to become the evidence.</p>
           {error ? (
             <div className="permission-help">
               <p className="error-text">{error}</p>

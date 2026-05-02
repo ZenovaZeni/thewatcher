@@ -4,7 +4,7 @@ import { watcherRituals } from "./rituals";
 
 describe("getActiveRitual", () => {
   it("returns the active segment as a ritual-like rule", () => {
-    const rule = getActiveRitual(watcherRituals[5], 8800, 1000);
+    const rule = getActiveRitual(watcherRituals[5], 4500, 1000);
 
     expect(rule.kind).toBe("stop-smiling");
     expect(rule.instruction).toBe("Stop smiling.");

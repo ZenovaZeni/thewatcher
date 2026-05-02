@@ -32,12 +32,12 @@ export function RitualHud({
           Ritual {ritualNumber} of {totalRituals} - {ritual.title}
         </p>
         <h2>{inIntro ? "Get ready." : activeRitual.instruction}</h2>
-        {inIntro ? <p>Ritual begins in {introCountdown}</p> : null}
+        {inIntro ? <p>Command drops in {introCountdown}</p> : null}
         {!inIntro && activeRitual.kind === "smile" ? <p>Hold the smile.</p> : null}
         {!inIntro && activeRitual.kind === "stop-smiling" ? <p>Let your face go empty.</p> : null}
       </div>
       <div className="hud-row">
-        <span>{inIntro ? "Stand by" : `Survive ${secondsRemaining}s`}</span>
+        <span>{inIntro ? "Stand by" : `${secondsRemaining}s command`}</span>
         <span>{inIntro ? "Safe" : `Mistake risk ${Math.round(threat * 100)}%`}</span>
       </div>
       <div className="threat-meter" aria-hidden="true">

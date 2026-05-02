@@ -29,7 +29,7 @@ describe("gameMachine", () => {
 
   it("does not fail during the ritual grace window", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const next = tickGame(state, 4500, {
+    const next = tickGame(state, 2400, {
       facePresent: true,
       blinkScore: 1,
       lookAwayScore: 0,
@@ -43,7 +43,7 @@ describe("gameMachine", () => {
 
   it("fails on the first active blink sample", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const failed = tickGame(state, 5200, {
+    const failed = tickGame(state, 3000, {
       facePresent: true,
       blinkScore: 1,
       lookAwayScore: 0,
@@ -58,14 +58,14 @@ describe("gameMachine", () => {
   it("clears a pending look-away violation when the player recovers", () => {
     const state = startGame(createInitialGameState(), 1000);
     const lookAwayRitual = { ...state, currentRitualIndex: 1 };
-    const firstViolation = tickGame(lookAwayRitual, 4500, {
+    const firstViolation = tickGame(lookAwayRitual, 2600, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 1,
       motionScore: 0,
       smileScore: 0,
     });
-    const recovered = tickGame(firstViolation, 4580, openEyesSample);
+    const recovered = tickGame(firstViolation, 2680, openEyesSample);
 
     expect(recovered.phase).toBe("playing");
     expect(recovered.violationStartedAt).toBeNull();
@@ -74,14 +74,14 @@ describe("gameMachine", () => {
   it("fails the smile ritual when the player refuses to smile", () => {
     const state = startGame(createInitialGameState(), 1000);
     const smileRitual = { ...state, currentRitualIndex: 3 };
-    const firstViolation = tickGame(smileRitual, 4600, {
+    const firstViolation = tickGame(smileRitual, 2600, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 0,
       motionScore: 0,
       smileScore: 0,
     });
-    const failed = tickGame(firstViolation, 5060, {
+    const failed = tickGame(firstViolation, 3000, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 0,
@@ -96,14 +96,14 @@ describe("gameMachine", () => {
   it("switches active rules inside obey-the-face", () => {
     const state = startGame(createInitialGameState(), 1000);
     const obeyRitual = { ...state, currentRitualIndex: 5, activeRuleId: "watcher-obey-face" };
-    const smiling = tickGame(obeyRitual, 5000, {
+    const smiling = tickGame(obeyRitual, 3500, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 0,
       motionScore: 0,
       smileScore: 0.8,
     });
-    const stopped = tickGame(smiling, 8800, {
+    const stopped = tickGame(smiling, 4600, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 0,
@@ -118,22 +118,22 @@ describe("gameMachine", () => {
 
   it("pauses on a ritual-complete beat before advancing", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const complete = tickGame(state, 25001, openEyesSample);
+    const complete = tickGame(state, 8701, openEyesSample);
 
     expect(complete.phase).toBe("ritualComplete");
     expect(complete.currentRitualIndex).toBe(0);
     expect(complete.completedRitualIndex).toBe(0);
-    expect(complete.ritualCompletedAt).toBe(25001);
+    expect(complete.ritualCompletedAt).toBe(8701);
   });
 
   it("advances to the next ritual after the success beat", () => {
     const state = startGame(createInitialGameState(), 1000);
-    const complete = tickGame(state, 25001, openEyesSample);
-    const next = tickGame(complete, 26601, openEyesSample);
+    const complete = tickGame(state, 8701, openEyesSample);
+    const next = tickGame(complete, 10301, openEyesSample);
 
     expect(next.phase).toBe("playing");
     expect(next.currentRitualIndex).toBe(1);
-    expect(next.ritualStartedAt).toBe(26601);
+    expect(next.ritualStartedAt).toBe(10301);
     expect(next.activeRuleId).toBe("watcher-look-away");
   });
 
@@ -143,14 +143,14 @@ describe("gameMachine", () => {
       currentRitualIndex: 5,
       activeRuleId: "watcher-obey-face",
     };
-    const complete = tickGame(state, 22001, {
+    const complete = tickGame(state, 13201, {
       facePresent: true,
       blinkScore: 0,
       lookAwayScore: 0,
       motionScore: 0,
-      smileScore: 0.8,
+      smileScore: 0,
     });
-    const won = tickGame(complete, 23601, openEyesSample);
+    const won = tickGame(complete, 14801, openEyesSample);
 
     expect(won.phase).toBe("won");
     expect(won.completedRitualIndex).toBe(5);

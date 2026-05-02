@@ -2,6 +2,18 @@ import { describe, expect, it } from "vitest";
 import { evaluateRitual, watcherRituals } from "./rituals";
 
 describe("evaluateRitual", () => {
+  it("uses short commands so the run starts fast", () => {
+    expect(watcherRituals.slice(0, -1).every((ritual) => ritual.durationMs <= 8500)).toBe(true);
+    expect(watcherRituals.every((ritual) => ritual.introMs <= 1400)).toBe(true);
+  });
+
+  it("uses rapid rule switches in the final command chain", () => {
+    const chain = watcherRituals.at(-1);
+
+    expect(chain?.segments?.length).toBeGreaterThanOrEqual(5);
+    expect(chain?.durationMs).toBeLessThanOrEqual(12000);
+  });
+
   it("fails do-not-blink when both eyes are closed", () => {
     const result = evaluateRitual(watcherRituals[0], {
       facePresent: true,

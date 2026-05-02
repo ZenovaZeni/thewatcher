@@ -372,6 +372,23 @@ h2 {
   transition: width 220ms ease;
 }
 
+.run-score {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.run-score span {
+  border: 1px solid rgba(209, 81, 98, 0.28);
+  background: rgba(209, 81, 98, 0.12);
+  color: #fff8f0;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 8px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .encounter-status p {
   color: rgba(244, 239, 231, 0.78);
   font-size: 12px;
