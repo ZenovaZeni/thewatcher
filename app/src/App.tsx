@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getWatcherAudioCue, type WatcherAudioCue, type WatcherAudioSnapshot } from "./audio/scareCues";
 import { useTensionAudio } from "./audio/useTensionAudio";
 import { createDemoStream } from "./camera/createDemoStream";
 import { useCamera } from "./camera/useCamera";
@@ -37,8 +38,10 @@ export function App() {
   const [now, setNow] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const stableFaceStartedAtRef = useRef<number | null>(null);
+  const previousAudioSnapshotRef = useRef<WatcherAudioSnapshot | null>(null);
   const activeStream = stream ?? demoStream;
   const isDemoMode = Boolean(demoStream && !stream);
+  const [audioCue, setAudioCue] = useState<WatcherAudioCue | null>(null);
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
   const activeRitual = getActiveRitual(ritual, now, gameState.ritualStartedAt);
@@ -76,7 +79,28 @@ export function App() {
     phase: gameState.phase,
   });
 
-  useTensionAudio(gameState.phase === "playing" || gameState.phase === "failed", threat, gameState.phase === "failed");
+  useEffect(() => {
+    const snapshot: WatcherAudioSnapshot = {
+      phase: gameState.phase,
+      ritualIndex: gameState.currentRitualIndex,
+      violationProgress,
+      threat,
+    };
+    const cue = getWatcherAudioCue(previousAudioSnapshotRef.current, snapshot);
+
+    if (cue) {
+      setAudioCue(cue);
+    }
+
+    previousAudioSnapshotRef.current = snapshot;
+  }, [gameState.currentRitualIndex, gameState.phase, threat, violationProgress]);
+
+  useTensionAudio(
+    gameState.phase === "playing" || gameState.phase === "ritualComplete" || gameState.phase === "failed",
+    threat,
+    gameState.phase === "failed",
+    audioCue,
+  );
 
   const begin = useCallback(async () => {
     const granted = await requestCamera();
@@ -86,6 +110,8 @@ export function App() {
     setSample(waitingSample);
     setHasTrackingSample(false);
     setCaughtCardUrl(null);
+    setAudioCue(null);
+    previousAudioSnapshotRef.current = null;
     setGameState(startCalibration(createInitialGameState()));
   }, [requestCamera]);
 
@@ -98,6 +124,8 @@ export function App() {
     setSample(waitingSample);
     setHasTrackingSample(false);
     setCaughtCardUrl(null);
+    setAudioCue(null);
+    previousAudioSnapshotRef.current = null;
     setGameState(startCalibration(createInitialGameState()));
   }, [demoStream]);
 
@@ -113,6 +141,8 @@ export function App() {
     setSample(waitingSample);
     setHasTrackingSample(false);
     setCaughtCardUrl(null);
+    setAudioCue(null);
+    previousAudioSnapshotRef.current = null;
     stableFaceStartedAtRef.current = null;
     setGameState(startCalibration(createInitialGameState()));
   }, []);
