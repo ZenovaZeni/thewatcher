@@ -8,6 +8,7 @@ import { DebugPanel } from "./components/DebugPanel";
 import { RitualHud } from "./components/RitualHud";
 import { createInitialGameState, startCalibration, startGame, tickGame } from "./game/gameMachine";
 import { watcherRituals } from "./game/rituals";
+import { getRitualTiming } from "./game/ritualTiming";
 import type { TrackingSample } from "./game/types";
 import { buildCaughtCardCaption, renderCaughtCard } from "./share/caughtCard";
 
@@ -36,13 +37,19 @@ export function App() {
 
   const ritual = watcherRituals[gameState.currentRitualIndex] ?? watcherRituals[0];
   const elapsedMs = gameState.phase === "playing" ? Math.max(0, now - gameState.ritualStartedAt) : 0;
+  const ritualTiming = getRitualTiming(ritual, now, gameState.ritualStartedAt);
   const threat = useMemo(() => {
     if (gameState.phase === "failed") return 1;
     if (gameState.phase !== "playing") return 0;
+    if (elapsedMs < ritual.introMs) return 0;
     const pressure = Math.max(sample.blinkScore, sample.lookAwayScore, sample.motionScore);
-    return Math.min(1, elapsedMs / ritual.durationMs + pressure * 0.45);
-  }, [elapsedMs, gameState.phase, ritual.durationMs, sample]);
-  const secondsRemaining = Math.max(0, Math.ceil((ritual.durationMs - elapsedMs) / 1000));
+    const activeElapsedMs = Math.max(0, elapsedMs - ritual.introMs);
+    return Math.min(1, activeElapsedMs / ritual.durationMs + pressure * 0.45);
+  }, [elapsedMs, gameState.phase, ritual.durationMs, ritual.introMs, sample]);
+  const violationProgress =
+    gameState.phase === "playing" && gameState.violationStartedAt
+      ? Math.min(1, Math.max(0, (now - gameState.violationStartedAt) / ritual.failHoldMs))
+      : 0;
 
   useTensionAudio(gameState.phase === "playing" || gameState.phase === "failed", threat, gameState.phase === "failed");
 
@@ -187,7 +194,14 @@ export function App() {
             </section>
           ) : null}
           {gameState.phase === "playing" ? (
-            <RitualHud ritual={ritual} secondsRemaining={secondsRemaining} threat={threat} />
+            <RitualHud
+              ritual={ritual}
+              timingStage={ritualTiming.stage}
+              introCountdown={ritualTiming.introCountdown}
+              secondsRemaining={ritualTiming.secondsRemaining}
+              threat={threat}
+              violationProgress={violationProgress}
+            />
           ) : null}
           {isDemoMode && gameState.phase === "playing" ? (
             <button type="button" className="demo-blink-button" onClick={triggerDemoBlink}>

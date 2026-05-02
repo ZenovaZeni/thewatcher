@@ -10,6 +10,15 @@ export function buildCaughtCardCaption(reason: string, _entityName: string, elap
   return `${reason} AT ${formatTime(elapsedMs)}`;
 }
 
+export function buildCaughtCardEvidenceDetails(reason: string, entityName: string, elapsedMs: number) {
+  return {
+    label: "EVIDENCE FRAME",
+    entity: entityName.toUpperCase(),
+    failure: reason,
+    timestamp: formatTime(elapsedMs),
+  };
+}
+
 export function renderCaughtCard(video: HTMLVideoElement, reason: string, entityName: string, elapsedMs: number): string {
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
@@ -34,39 +43,102 @@ export function renderCaughtCard(video: HTMLVideoElement, reason: string, entity
   context.restore();
 
   const caption = buildCaughtCardCaption(reason, entityName, elapsedMs);
+  const evidence = buildCaughtCardEvidenceDetails(reason, entityName, elapsedMs);
 
-  context.fillStyle = "rgba(90, 0, 16, 0.28)";
+  context.fillStyle = "rgba(52, 0, 12, 0.2)";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, "rgba(0, 0, 0, 0.36)");
-  gradient.addColorStop(0.55, "rgba(0, 0, 0, 0.08)");
-  gradient.addColorStop(1, "rgba(0, 0, 0, 0.82)");
+  gradient.addColorStop(0, "rgba(0, 0, 0, 0.48)");
+  gradient.addColorStop(0.38, "rgba(0, 0, 0, 0.06)");
+  gradient.addColorStop(0.72, "rgba(0, 0, 0, 0.34)");
+  gradient.addColorStop(1, "rgba(0, 0, 0, 0.9)");
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.fillStyle = "rgba(255, 255, 255, 0.42)";
-  for (let y = 0; y < canvas.height; y += 10) {
-    context.fillRect(0, y, canvas.width, 1);
+  context.fillStyle = "rgba(236, 247, 242, 0.12)";
+  for (let y = 0; y < canvas.height; y += 6) {
+    context.fillRect(0, y, canvas.width, y % 18 === 0 ? 2 : 1);
   }
 
-  context.fillStyle = "rgba(0, 0, 0, 0.78)";
-  context.fillRect(56, canvas.height - 420, canvas.width - 112, 300);
-  context.strokeStyle = "rgba(244, 239, 231, 0.18)";
+  const glitchSeed = Math.max(1, Math.floor(elapsedMs / 137) + reason.length * 11 + entityName.length * 7);
+  for (let index = 0; index < 11; index += 1) {
+    const y = 140 + ((glitchSeed * (index + 3) * 53) % (canvas.height - 520));
+    const height = 4 + ((glitchSeed + index * 17) % 18);
+    const offset = ((index % 2 === 0 ? 1 : -1) * (18 + ((glitchSeed + index * 23) % 58)));
+    context.fillStyle = index % 3 === 0 ? "rgba(173, 35, 56, 0.2)" : "rgba(217, 245, 236, 0.12)";
+    context.fillRect(Math.max(0, offset), y, canvas.width - Math.abs(offset), height);
+  }
+
+  context.strokeStyle = "rgba(236, 247, 242, 0.48)";
   context.lineWidth = 2;
-  context.strokeRect(56, canvas.height - 420, canvas.width - 112, 300);
+  const markerLength = 96;
+  const markerInset = 54;
+  context.beginPath();
+  context.moveTo(markerInset, markerInset + markerLength);
+  context.lineTo(markerInset, markerInset);
+  context.lineTo(markerInset + markerLength, markerInset);
+  context.moveTo(canvas.width - markerInset - markerLength, markerInset);
+  context.lineTo(canvas.width - markerInset, markerInset);
+  context.lineTo(canvas.width - markerInset, markerInset + markerLength);
+  context.moveTo(markerInset, canvas.height - markerInset - markerLength);
+  context.lineTo(markerInset, canvas.height - markerInset);
+  context.lineTo(markerInset + markerLength, canvas.height - markerInset);
+  context.moveTo(canvas.width - markerInset - markerLength, canvas.height - markerInset);
+  context.lineTo(canvas.width - markerInset, canvas.height - markerInset);
+  context.lineTo(canvas.width - markerInset, canvas.height - markerInset - markerLength);
+  context.stroke();
+
+  context.fillStyle = "rgba(0, 0, 0, 0.54)";
+  context.fillRect(54, 62, 420, 88);
+  context.strokeStyle = "rgba(209, 81, 98, 0.62)";
+  context.strokeRect(54, 62, 420, 88);
 
   context.fillStyle = "#d15162";
-  context.font = "800 42px Inter, Arial, sans-serif";
-  context.fillText(entityName.toUpperCase(), 96, canvas.height - 330);
+  context.font = "900 34px Inter, Arial, sans-serif";
+  context.fillText(evidence.label, 84, 118);
+
+  context.fillStyle = "rgba(236, 247, 242, 0.72)";
+  context.font = "700 24px Inter, Arial, sans-serif";
+  context.fillText(`TIME ${evidence.timestamp}`, canvas.width - 250, 118);
+
+  context.fillStyle = "rgba(0, 0, 0, 0.72)";
+  context.fillRect(56, canvas.height - 486, canvas.width - 112, 360);
+  context.strokeStyle = "rgba(236, 247, 242, 0.2)";
+  context.strokeRect(56, canvas.height - 486, canvas.width - 112, 360);
+  context.strokeStyle = "rgba(209, 81, 98, 0.56)";
+  context.beginPath();
+  context.moveTo(56, canvas.height - 486);
+  context.lineTo(canvas.width - 56, canvas.height - 486);
+  context.moveTo(56, canvas.height - 126);
+  context.lineTo(canvas.width - 56, canvas.height - 126);
+  context.stroke();
+
+  context.fillStyle = "rgba(236, 247, 242, 0.62)";
+  context.font = "800 26px Inter, Arial, sans-serif";
+  context.fillText("ENTITY", 96, canvas.height - 408);
+  context.fillText("FAILURE", 96, canvas.height - 282);
+  context.fillText("TIMESTAMP", 670, canvas.height - 408);
 
   context.fillStyle = "#fff8f0";
-  context.font = "900 76px Inter, Arial, sans-serif";
-  context.fillText(caption, 96, canvas.height - 225, canvas.width - 192);
+  context.font = "900 50px Inter, Arial, sans-serif";
+  context.fillText(evidence.entity, 96, canvas.height - 354, 520);
 
-  context.fillStyle = "rgba(244, 239, 231, 0.76)";
-  context.font = "700 34px Inter, Arial, sans-serif";
-  context.fillText("Your camera stayed local. You chose this share.", 96, canvas.height - 155, canvas.width - 192);
+  context.fillStyle = "#d15162";
+  context.font = "900 42px Inter, Arial, sans-serif";
+  context.fillText(evidence.failure, 96, canvas.height - 228, canvas.width - 192);
+
+  context.fillStyle = "#fff8f0";
+  context.font = "900 56px Inter, Arial, sans-serif";
+  context.fillText(evidence.timestamp, 670, canvas.height - 354, 300);
+
+  context.fillStyle = "#fff8f0";
+  context.font = "900 58px Inter, Arial, sans-serif";
+  context.fillText(caption, 96, canvas.height - 166, canvas.width - 192);
+
+  context.fillStyle = "rgba(236, 247, 242, 0.66)";
+  context.font = "700 28px Inter, Arial, sans-serif";
+  context.fillText("LOCAL CAMERA CAPTURE / SHARE AUTHORIZED", 96, canvas.height - 94, canvas.width - 192);
 
   return canvas.toDataURL("image/png");
 }

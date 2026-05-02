@@ -7,6 +7,7 @@ export type GameState = {
   phase: GamePhase;
   currentRitualIndex: number;
   ritualStartedAt: number;
+  violationStartedAt: number | null;
   failureReason: string | null;
   failedAt: number | null;
 };
@@ -16,6 +17,7 @@ export function createInitialGameState(): GameState {
     phase: "idle",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    violationStartedAt: null,
     failureReason: null,
     failedAt: null,
   };
@@ -27,6 +29,7 @@ export function startCalibration(state: GameState): GameState {
     phase: "calibrating",
     currentRitualIndex: 0,
     ritualStartedAt: 0,
+    violationStartedAt: null,
     failureReason: null,
     failedAt: null,
   };
@@ -38,6 +41,7 @@ export function startGame(state: GameState, now: number): GameState {
     phase: "playing",
     currentRitualIndex: 0,
     ritualStartedAt: now,
+    violationStartedAt: null,
     failureReason: null,
     failedAt: null,
   };
@@ -50,12 +54,27 @@ export function tickGame(state: GameState, now: number, sample: TrackingSample):
 
   const ritual = watcherRituals[state.currentRitualIndex];
   const result = evaluateRitual(ritual, sample);
+  const elapsedMs = now - state.ritualStartedAt;
+
+  if (elapsedMs < ritual.introMs + ritual.graceMs) {
+    return state.violationStartedAt ? { ...state, violationStartedAt: null } : state;
+  }
 
   if (result.status === "failed") {
+    const violationStartedAt = state.violationStartedAt ?? now;
+
+    if (now - violationStartedAt < ritual.failHoldMs) {
+      return { ...state, violationStartedAt };
+    }
+
     return { ...state, phase: "failed", failureReason: result.reason, failedAt: now };
   }
 
-  if (now - state.ritualStartedAt < ritual.durationMs) {
+  if (state.violationStartedAt) {
+    return { ...state, violationStartedAt: null };
+  }
+
+  if (elapsedMs < ritual.introMs + ritual.durationMs) {
     return state;
   }
 
@@ -65,5 +84,5 @@ export function tickGame(state: GameState, now: number, sample: TrackingSample):
     return { ...state, phase: "won" };
   }
 
-  return { ...state, currentRitualIndex: nextIndex, ritualStartedAt: now };
+  return { ...state, currentRitualIndex: nextIndex, ritualStartedAt: now, violationStartedAt: null };
 }

@@ -14,6 +14,9 @@ export type Ritual = {
   title: string;
   instruction: string;
   durationMs: number;
+  introMs: number;
+  graceMs: number;
+  failHoldMs: number;
   failReason: string;
   threshold: number;
 };

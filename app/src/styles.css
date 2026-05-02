@@ -193,13 +193,34 @@ h2 {
   background: rgba(244, 239, 231, 0.12);
 }
 
-.threat-meter span {
+.threat-meter span,
+.violation-meter span {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: #d83448;
   box-shadow: 0 0 18px rgba(216, 52, 72, 0.8);
   transition: width 120ms linear;
+}
+
+.ritual-hud-intro {
+  border-color: rgba(244, 239, 231, 0.18);
+}
+
+.ritual-hud-intro .threat-meter span {
+  background: #f4efe7;
+  box-shadow: 0 0 18px rgba(244, 239, 231, 0.38);
+}
+
+.violation-meter {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(244, 239, 231, 0.1);
+}
+
+.violation-meter span {
+  background: #fff8f0;
 }
 
 .failure-panel {
