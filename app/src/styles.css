@@ -113,7 +113,9 @@ h2 {
 }
 
 .camera-vignette,
-.entity-shadow,
+.camera-breath,
+.edge-presence,
+.reflection-face,
 .scan-lines {
   pointer-events: none;
   position: absolute;
@@ -126,18 +128,51 @@ h2 {
     linear-gradient(180deg, rgba(92, 0, 14, 0.18), rgba(0, 0, 0, 0.34));
 }
 
-.entity-shadow {
-  top: 8%;
-  left: 50%;
-  width: min(42vw, 210px);
-  height: min(72vw, 390px);
-  border-radius: 50% 50% 18% 18%;
+.camera-breath {
   background:
-    radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.28) 0 1.5%, transparent 2.5% 7%, rgba(0, 0, 0, 0.88) 9%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.08));
-  filter: blur(2px);
-  transform-origin: 50% 14%;
-  translate: -50% 0;
+    radial-gradient(circle at 78% 34%, rgba(156, 24, 42, 0.22), transparent 24%),
+    radial-gradient(circle at 14% 72%, rgba(0, 0, 0, 0.62), transparent 34%);
+  animation: camera-breath 3.4s ease-in-out infinite;
+}
+
+.edge-presence {
+  top: auto;
+  bottom: 12%;
+  width: min(24vw, 150px);
+  height: min(62vh, 520px);
+  border-radius: 48% 48% 12% 12%;
+  background:
+    radial-gradient(circle at 50% 14%, rgba(255, 248, 240, 0.32) 0 1.4%, transparent 2.2% 7%, rgba(0, 0, 0, 0.82) 9%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.14));
+  filter: blur(2.6px);
+  mix-blend-mode: multiply;
+}
+
+.edge-presence-left {
+  left: -54px;
+}
+
+.edge-presence-right {
+  right: -64px;
+  bottom: 28%;
+  width: min(18vw, 110px);
+  height: min(44vh, 360px);
+  filter: blur(3.2px);
+}
+
+.reflection-face {
+  left: 58%;
+  top: 14%;
+  width: min(22vw, 140px);
+  height: min(18vw, 140px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 42%, rgba(255, 248, 240, 0.24) 0 2%, transparent 3%),
+    radial-gradient(circle at 62% 42%, rgba(255, 248, 240, 0.2) 0 1.7%, transparent 2.8%),
+    radial-gradient(circle at 50% 72%, rgba(0, 0, 0, 0.7) 0 4%, transparent 5%),
+    radial-gradient(circle, rgba(0, 0, 0, 0.5), transparent 58%);
+  filter: blur(5px);
+  mix-blend-mode: multiply;
 }
 
 .scan-lines {
@@ -343,4 +378,15 @@ h2 {
   color: #fff8f0;
   font-weight: 800;
   text-align: right;
+}
+
+@keyframes camera-breath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.035);
+  }
 }

@@ -101,7 +101,16 @@ export function CameraStage({
   return (
     <div className="camera-stage">
       <video ref={videoRef} playsInline muted />
-      <div className="entity-shadow" style={{ opacity: 0.12 + threat * 0.5, transform: `scale(${1 + threat * 0.28})` }} />
+      <div
+        className="edge-presence edge-presence-left"
+        style={{ opacity: Math.max(0, threat - 0.18) * 0.72, transform: `translateY(${12 - threat * 30}px)` }}
+      />
+      <div
+        className="edge-presence edge-presence-right"
+        style={{ opacity: Math.max(0, threat - 0.45) * 0.62, transform: `translateY(${-8 + threat * 24}px)` }}
+      />
+      <div className="reflection-face" style={{ opacity: Math.max(0, threat - 0.62) * 0.58 }} />
+      <div className="camera-breath" style={{ opacity: 0.08 + threat * 0.28 }} />
       <div className="scan-lines" />
       <div className="camera-vignette" />
       <p className="tracker-status">{trackerStatus}</p>
