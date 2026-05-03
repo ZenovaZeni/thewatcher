@@ -80,6 +80,7 @@ export function App() {
     violationProgress,
     phase: gameState.phase,
     activeRuleKind: activeRitual.kind,
+    active: gameState.phase === "playing" && ritualTiming.stage === "active",
   });
 
   useEffect(() => {

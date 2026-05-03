@@ -36,6 +36,9 @@ export function CameraStage({
 }: CameraStageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackerRef = useRef<FaceTracker | null>(null);
+  const lastDetectAtRef = useRef(0);
+  const sampleCountRef = useRef(0);
+  const statusAtRef = useRef(0);
   const [trackerStatus, setTrackerStatus] = useState("Warming camera");
 
   useEffect(() => {
@@ -64,8 +67,9 @@ export function CameraStage({
       .then((tracker) => {
         if (cancelled) return;
         trackerRef.current = tracker;
-        setTrackerStatus("Keep your face in frame");
-        onTrackerStatus?.("Keep your face in frame");
+        const status = "Face tracking loaded";
+        setTrackerStatus(status);
+        onTrackerStatus?.(status);
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -86,11 +90,40 @@ export function CameraStage({
     const detect = () => {
       const video = videoRef.current;
       const tracker = trackerRef.current;
+      const now = performance.now();
 
       if (demoMode) {
+        sampleCountRef.current += 1;
         onSample(demoSample);
-      } else if (video && tracker && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-        onSample(tracker.detect(video, performance.now()));
+      } else if (
+        video &&
+        tracker &&
+        video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0 &&
+        now - lastDetectAtRef.current >= 80
+      ) {
+        lastDetectAtRef.current = now;
+
+        try {
+          const nextSample = tracker.detect(video, now);
+          sampleCountRef.current += 1;
+          onSample(nextSample);
+
+          if (now - statusAtRef.current > 1000) {
+            statusAtRef.current = now;
+            const status = nextSample.facePresent
+              ? `Face tracking active (${sampleCountRef.current} samples)`
+              : `Tracking active, no face (${video.videoWidth}x${video.videoHeight})`;
+            setTrackerStatus(status);
+            onTrackerStatus?.(status);
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown tracking error";
+          const status = `Tracking error: ${message.slice(0, 90)}`;
+          setTrackerStatus(status);
+          onTrackerStatus?.(status);
+        }
       }
 
       frame = requestAnimationFrame(detect);
@@ -105,9 +138,9 @@ export function CameraStage({
 
   return (
     <div className="camera-stage">
-      <video ref={videoRef} playsInline muted />
+      <video ref={videoRef} playsInline muted autoPlay />
       <div
-        className={`watcher-presence watcher-presence-${watcherScare.peekSide}`}
+        className={`watcher-presence watcher-presence-${watcherScare.peekSide} watcher-presence-${watcherScare.asset}`}
         style={{
           opacity: watcherScare.creatureOpacity,
           transform: `translateY(${20 - watcherScare.presence * 42}px) translateX(${
@@ -115,11 +148,17 @@ export function CameraStage({
           }px) scale(${watcherScare.scale})`,
         }}
       >
-        <span className="watcher-head" />
-        <span className="watcher-eye watcher-eye-left" style={{ opacity: watcherScare.eyeGlow }} />
-        <span className="watcher-eye watcher-eye-right" style={{ opacity: watcherScare.eyeGlow }} />
-        <span className="watcher-mouth" style={{ opacity: Math.max(0.3, watcherScare.eyeGlow * 0.8) }} />
-        <span className="watcher-shoulders" />
+        <img
+          src={
+            watcherScare.asset === "lean"
+              ? "/assets/watcher/watcher-lean.png"
+              : "/assets/watcher/watcher-front.png"
+          }
+          alt=""
+          aria-hidden="true"
+        />
+        <span className="watcher-eye watcher-eye-left" style={{ opacity: watcherScare.eyeGlow * 0.72 }} />
+        <span className="watcher-eye watcher-eye-right" style={{ opacity: watcherScare.eyeGlow * 0.72 }} />
       </div>
       <div
         className="watcher-smear"
